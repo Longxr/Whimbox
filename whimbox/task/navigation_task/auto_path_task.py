@@ -72,21 +72,25 @@ class AutoPathTask(TaskTemplate):
                     return
     
     def start_move(self, current_posi, target_posi, offset):
-        # itt.key_down('w')
         self.move_controller.start_move_ahead(current_posi, target_posi, offset)
 
     def stop_move(self):
-        # itt.key_up('w')
         self.move_controller.stop_move_ahead()
 
     def is_moving(self):
-        return self.move_controller.is_moving
+        if self.move_controller:
+            return self.move_controller.is_moving
+        else:
+            return False
 
     def start_jump(self):
         self.jump_controller.start_jump()
 
     def stop_jump(self):
-        self.jump_controller.stop_jump()
+        if self.jump_controller:
+            self.jump_controller.stop_jump()
+        else:
+            return False
 
 
     @register_step("初始化各种信息")
@@ -121,7 +125,11 @@ class AutoPathTask(TaskTemplate):
                 if self.path_info.target and self.path_info.target in self.material_count_dict \
                 and self.material_count_dict[self.path_info.target] >= self.excepted_num:
                     break
+            if self.need_stop():
+                break
             self.inner_step_change_view()
+            if self.need_stop():
+                break
             self.inner_step_control_move()
             time.sleep(self.step_sleep)
         return "step2"
@@ -186,7 +194,7 @@ class AutoPathTask(TaskTemplate):
                     
                 # 当行动模式切换时停一下，避免因为状态切换时图标显示比较乱而错判
                 self.need_move_mode = self.target_point.move_mode
-                if self.is_moving and self.target_point.action != ACTION_WAIT:
+                if self.is_moving() and self.target_point.action != ACTION_WAIT:
                     if self.last_need_move_mode == MOVE_MODE_WALK and self.need_move_mode == MOVE_MODE_JUMP:
                         self.stop_move()
                         time.sleep(self.walk2jump_stop_time)
@@ -202,7 +210,7 @@ class AutoPathTask(TaskTemplate):
                 self.log_to_gui(f"传送到附近的流转之柱")
                 self.stop_move()
                 self.stop_jump()
-                nikki_map.bigmap_tp(self.target_point.position, self.path_info.map)
+                nikki_map.bigmap_tp(self.target_point.position, self.path_info.map, csf=self.need_stop)
                 self.curr_position = nikki_map.get_position()
         return is_end
 

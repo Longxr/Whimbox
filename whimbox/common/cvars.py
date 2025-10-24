@@ -1,10 +1,16 @@
 """Constants."""
 
+import threading
 from whimbox.common.path_lib import IS_DEV_MODE
 from whimbox.config.config import global_config
 
 DEBUG_MODE = global_config.get_bool('General', 'debug') and IS_DEV_MODE
 CV_DEBUG_MODE = global_config.get_bool('General', 'cv_debug') and IS_DEV_MODE
+
+# 全局的任务停止信号
+# 所有和自动化相关的耗时循环都应该检查这个信号
+# 比如页面切换、地图移动等等，（task相关已经在TaskTemplate中统一检查）
+global_stop_flag = threading.Event()
 
 # Angle modes
 ANGLE_NORMAL = 0

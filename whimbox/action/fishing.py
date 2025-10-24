@@ -75,7 +75,7 @@ class FishingTask(TaskTemplate):
         如果正确，则持续按住
         """
         itt.key_down(key)
-        while True:
+        while not self.need_stop():
             time.sleep(0.5)
             cap = itt.capture(posi=AreaFishingDetection.position)
             current_px_count = count_px_with_hsv_limit(cap, hsv_limit[0], hsv_limit[1])
@@ -95,7 +95,7 @@ class FishingTask(TaskTemplate):
         self.log_to_gui("进入拉扯鱼线状态")
         cap = itt.capture(posi=AreaFishingDetection.position)
         px_count = count_px_with_hsv_limit(cap, hsv_limit[0], hsv_limit[1])
-        while px_count > 0:
+        while px_count > 0 and not self.need_stop():
             px_count = self._pull_in_direction('a', px_count)
             if px_count == 0:
                 break

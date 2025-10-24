@@ -213,7 +213,7 @@ class Map(MiniMap, BigMap):
         screen_center_y = 1080 / 2
 
         if csf():
-            return
+            return list([screen_center_x, screen_center_y])
 
         itt.move_to([screen_center_x + float_posi, screen_center_y + float_posi])  # screen center
         itt.left_down()
@@ -256,9 +256,9 @@ class Map(MiniMap, BigMap):
             return list([screen_center_x, screen_center_y])  # screen center
         else:
             if euclidean_distance(after_move_posi, curr_posi) <= self.BIGMAP_TP_OFFSET:
-                return self._move_bigmap(target_posi=target_posi, float_posi=float_posi + 45)
+                return self._move_bigmap(target_posi=target_posi, float_posi=float_posi + 45, csf=csf)
             else:
-                return self._move_bigmap(target_posi=target_posi)
+                return self._move_bigmap(target_posi=target_posi, csf=csf)
 
     def find_closest_teleporter(self, posi: list, map_name: str):
         """
@@ -309,18 +309,6 @@ class Map(MiniMap, BigMap):
                     itt.wait_until_stable()
                     self.update_region_and_map_name()
                     return True
-                # scroll_times = 2
-                # while scroll_times > 0:
-                #     text_box_dict = itt.ocr_and_detect_posi(AreaBigMapRegionSelect)
-                #     if tp_region in text_box_dict:
-                #         click_box(text_box_dict[tp_region], AreaBigMapRegionSelect)
-                #         itt.wait_until_stable()
-                #         self.update_region_and_map_name()
-                #         return True
-                #     itt.move_to(AreaBigMapRegionSelect.center_position())
-                #     itt.middle_scroll(-15)
-                #     scroll_times -= 1
-                #     time.sleep(0.5)
             return False
         else:
             return True
@@ -345,8 +333,8 @@ class Map(MiniMap, BigMap):
         self.maximize_bigmap_scale()
         switch_success = self._switch_to_area(tp_province, tp_region)
         if not switch_success:
-            logger.error(f"switch to {tp_province} {tp_region} failed")
-            raise Exception(f"switch to {tp_province} {tp_region} failed")
+            logger.error(f"地图切换到'{tp_province}-{tp_region}'失败")
+            raise Exception(f"地图切换到'{tp_province}-{tp_region}'失败")
 
         click_posi = self._move_bigmap(tp_posi, csf=csf)
         itt.move_and_click(click_posi)
@@ -358,9 +346,9 @@ class Map(MiniMap, BigMap):
             if scroll_find_click(AreaBigMapTeleporterSelect, target_teleporter.name, hsv_limit=(hsv_lower, hsv_upper)):
                 itt.wait_until_stable()
                 if not itt.appear_then_click(ButtonBigMapTeleport):
-                    raise BigMapTPError("bigmap tp failed")
+                    raise BigMapTPError("大地图传送失败")
             else:
-                raise BigMapTPError("bigmap tp failed")
+                raise BigMapTPError("大地图传送失败")
 
         # 等待传送完成
         while not (ui_control.verify_page(page_main)):

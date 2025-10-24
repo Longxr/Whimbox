@@ -1,6 +1,5 @@
 '''通用的游戏UI操作工具'''
 
-from whimbox.ui.page_assets import page_main
 from whimbox.ui.template.img_manager import GameImg, ImgIcon
 from whimbox.ui.template.button_manager import Button
 from whimbox.ui.template.text_manager import Text
@@ -9,7 +8,7 @@ from whimbox.interaction.interaction_core import itt
 from whimbox.common.utils.img_utils import *
 from whimbox.common.utils.posi_utils import *
 from whimbox.ui.ui_assets import *
-
+from whimbox.common.cvars import global_stop_flag
 import time
 
 
@@ -81,6 +80,8 @@ def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, 
     box = None
     cap = itt.capture(posi = area.position)
     while True:
+        if global_stop_flag.is_set():
+            return False
         if isinstance(target, ImgIcon):
             target_img = target.image
             if hsv_limit:

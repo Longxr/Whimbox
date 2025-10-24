@@ -2,7 +2,7 @@
 # 所以就不整原项目thread管理那一套了，怎么简单怎么来
 from whimbox.common.logger import logger
 from whimbox.ingame_ui.ingame_ui import win_ingame_ui
-from whimbox.common.cvars import DEBUG_MODE
+from whimbox.common.cvars import DEBUG_MODE, global_stop_flag
 from whimbox.common.utils.ui_utils import back_to_page_main
 
 from pynput import keyboard
@@ -50,7 +50,7 @@ class TaskResult:
 class TaskTemplate:
     def __init__(self, name="", check_stop_func=None):
         self.name = name
-        self.task_stop_flag = False
+        global_stop_flag.clear()
         self.check_stop_func = check_stop_func
         self.step_sleep = 0.2   # 步骤执行后等待时间
         self.steps_dict = {}    # {step_name: TaskStep} 步骤字典
@@ -125,10 +125,14 @@ class TaskTemplate:
         if res.status in [STATE_TYPE_SUCCESS, STATE_TYPE_STOP]:
             return res
         else:
-            self.log_to_gui(f"自动返回主界面，重试一次")
-            back_to_page_main()
-            res = self._task_run()
-            return res
+            # 非手动停止导致的失败，就再试一次
+            if not self.need_stop():
+                self.log_to_gui(f"自动返回主界面，重试一次")
+                back_to_page_main()
+                res = self._task_run()
+                return res
+            else:
+                return res
 
     def _task_run(self):
         """核心执行逻辑"""
@@ -199,12 +203,12 @@ class TaskTemplate:
 
     def task_stop(self, msg=None):
         '''如果子类有自己额外的停止代码，就实现这个方法，并调用父类的这个方法'''
-        self.task_stop_flag = True
+        global_stop_flag.set()
         self.update_task_result(status=STATE_TYPE_STOP, message=msg or "停止任务")
 
     def need_stop(self):
         # 综合判断是否需要停止
-        return self.task_stop_flag or (self.check_stop_func and self.check_stop_func())
+        return global_stop_flag.is_set() or (self.check_stop_func and self.check_stop_func())
 
     def get_state_msg(self):
         """获得当前任务的状态信息，供agent显示"""

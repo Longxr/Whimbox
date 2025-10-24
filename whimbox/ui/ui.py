@@ -105,6 +105,9 @@ class UI():
             # Execute the path step by step
             success = True
             for i in range(len(path) - 1):
+                if global_stop_flag.is_set():
+                    self.switch_ui_lock.release()
+                    return 
                 from_page = path[i]
                 to_page = path[i + 1]
                 button = from_page.links.get(to_page, None)
@@ -135,7 +138,7 @@ class UI():
                     logger.warning(f"Expected to be at {to_page}, but verification failed. Retrying...")
                     success = False
                     break
-            
+
             if not success:
                 self.switch_ui_lock.release()
                 if retry_times >= max_retry:
