@@ -209,6 +209,8 @@ class AutoPathTask(TaskTemplate):
                         if wait_time is None:
                             wait_time = self.jump2walk_stop_time
                         time.sleep(float(wait_time))
+                    elif self.target_point.action == ACTION_KEY_CLICK:
+                        itt.key_press(self.target_point.action_params)
                     
                 # 当行动模式切换时停一下，避免因为状态切换时图标显示比较乱而错判
                 self.need_move_mode = self.target_point.move_mode
