@@ -20,7 +20,7 @@ class MiraCrownTask(TaskTemplate):
             if text.endswith("/45"):
                 star_num = int(text.split("/")[0])
                 if star_num < 45:
-                    self.task_stop(msg="请先完成基础搭配赛")
+                    self.task_stop(message="请先完成基础搭配赛")
                     break
             if text.endswith("/24"):
                 star_num = int(text.split("/")[0])
@@ -30,7 +30,7 @@ class MiraCrownTask(TaskTemplate):
                     itt.delay(1, comment="等待奇迹之冠页面加载")
                 else:
                     ui_control.goto_page(page_main)
-                    self.task_stop(msg="奇迹之冠进度已满")
+                    self.task_stop(message="奇迹之冠进度已满")
                 break
 
     @register_step("快速通关")

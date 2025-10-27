@@ -11,7 +11,7 @@ from whimbox.common.logger import logger
 from whimbox.common.utils.utils import get_active_window_process_name
 from whimbox.common.cvars import PROCESS_NAME
 
-from whimbox.ingame_ui.components import CollapsedChatWidget, SettingsDialog, ChatView, PathSelectionDialog
+from whimbox.ingame_ui.components import CollapsedChatWidget, SettingsDialog, ChatView, PathSelectionDialog, FunctionView
 from whimbox.mcp_agent import mcp_agent
 from whimbox.ingame_ui.workers.call_worker import TaskCallWorker
 
@@ -23,13 +23,14 @@ class IngameUI(QWidget):
         
         # 状态管理
         self.is_expanded = False
+        self.current_view = 'chat'  # 'function' 或 'chat'
         
         # UI组件
         self.collapsed_widget = None
         self.expanded_widget = None
         self.chat_view = None  # ChatView组件
-        self.dragon_button = None
-        self.autopath_button = None
+        self.function_view = None  # FunctionView组件
+        self.view_toggle_button = None  # 视图切换按钮
         self.settings_dialog = None
         self.path_dialog = None
         self.task_worker = None  # 任务worker
@@ -155,17 +156,17 @@ class IngameUI(QWidget):
         title_layout.addWidget(minimize_button)
         title_layout.addWidget(close_button)
         
-        # 功能按钮栏
+        # 视图切换按钮
         button_layout = QHBoxLayout()
         button_layout.setSpacing(8)
         button_layout.setContentsMargins(0, 4, 0, 4)
         
-        self.dragon_button = QPushButton("🐉 一条龙")
-        self.dragon_button.setFixedHeight(40)
-        self.dragon_button.clicked.connect(self.on_dragon_clicked)
-        self.dragon_button.setStyleSheet("""
+        self.view_toggle_button = QPushButton("🎯 功能菜单")
+        self.view_toggle_button.setFixedHeight(40)
+        self.view_toggle_button.clicked.connect(self.toggle_view)
+        self.view_toggle_button.setStyleSheet("""
             QPushButton {
-                background-color: #FF9800;
+                background-color: #2196F3;
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -174,36 +175,18 @@ class IngameUI(QWidget):
                 padding: 8px 16px;
             }
             QPushButton:hover {
-                background-color: #F57C00;
+                background-color: #1976D2;
             }
             QPushButton:pressed {
-                background-color: #E65100;
+                background-color: #1565C0;
             }
         """)
         
-        self.autopath_button = QPushButton("🗺️ 自动跑图")
-        self.autopath_button.setFixedHeight(40)
-        self.autopath_button.clicked.connect(self.on_autopath_clicked)
-        self.autopath_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: bold;
-                padding: 8px 16px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-            QPushButton:pressed {
-                background-color: #3d8b40;
-            }
-        """)
+        button_layout.addWidget(self.view_toggle_button)
         
-        button_layout.addWidget(self.dragon_button)
-        button_layout.addWidget(self.autopath_button)
+        # 创建功能视图组件
+        self.function_view = FunctionView(self.expanded_widget)
+        self.function_view.function_clicked.connect(self.on_function_clicked)
         
         # 创建聊天视图组件
         self.chat_view = ChatView(self.expanded_widget)
@@ -214,48 +197,82 @@ class IngameUI(QWidget):
         # 组装布局
         layout.addLayout(title_layout)
         layout.addLayout(button_layout)
+        layout.addWidget(self.function_view, 1)
         layout.addWidget(self.chat_view, 1)
-    
-    def on_dragon_clicked(self):
-        """点击一条龙按钮"""
-        logger.info("Dragon button clicked")
         
+        # 默认显示聊天视图
+        self.function_view.hide()
+    
+    def toggle_view(self):
+        """切换视图（功能菜单 <-> 对话框）"""
+        if self.current_view == 'function':
+            # 切换到聊天视图
+            self.current_view = 'chat'
+            self.function_view.hide()
+            self.chat_view.show()
+            self.view_toggle_button.setText("🎯 功能菜单")
+            logger.info("Switched to chat view")
+        else:
+            # 切换到功能视图
+            self.current_view = 'function'
+            self.chat_view.hide()
+            self.function_view.show()
+            self.view_toggle_button.setText("💬 返回对话框")
+            logger.info("Switched to function view")
+    
+    def switch_to_chat_view(self):
+        """切换到聊天视图"""
+        if self.current_view != 'chat':
+            self.current_view = 'chat'
+            self.function_view.hide()
+            self.chat_view.show()
+            self.view_toggle_button.setText("🎯 功能菜单")
+            logger.info("Switched to chat view")
+    
+    def on_function_clicked(self, config: dict):
+        """统一处理功能按钮点击"""
         # 检查是否已有任务在运行
         if self.task_worker and self.task_worker.isRunning():
             QMessageBox.warning(self, "提示", "已有任务正在运行中，请稍候...")
             return
         
+        # 切换到聊天视图
+        self.switch_to_chat_view()
+        
+        # 如果需要弹出对话框
+        if config.get('needs_dialog'):
+            if config['dialog_type'] == 'path_selection':
+                self.path_dialog = PathSelectionDialog(self)
+                self.path_dialog.path_selected.connect(lambda path: self.start_task_with_path(config, path))
+                self.path_dialog.show_centered()
+                self.path_dialog.exec_()
+        else:
+            # 直接启动任务
+            self.start_task(config)
+    
+    def start_task(self, config: dict):
+        """启动任务"""
         # 将焦点返回给游戏
         self.give_back_focus()
-
-        # 禁用按钮
-        self.dragon_button.setEnabled(False)
-        self.dragon_button.setText("⏳ 执行中...")
+        
+        # 禁用所有按钮
+        if self.function_view:
+            self.function_view.set_all_buttons_enabled(False)
         
         # 在聊天视图中显示消息
-        if self.chat_view:
-            self.chat_view.add_message("开始一条龙，按“引号”键，随时终止任务\n", 'ai')
+        if self.chat_view and config.get('start_message'):
+            self.chat_view.add_message(config['start_message'], 'ai')
         
         # 创建并启动worker
-        self.task_worker = TaskCallWorker("all_in_one_task", {})
+        self.task_worker = TaskCallWorker(config['task_name'], config.get('task_params', {}))
         self.task_worker.progress.connect(self.on_task_progress)
         self.task_worker.finished.connect(self.on_task_finished)
         self.task_worker.start()
         
-        logger.info("Dragon task started")
+        logger.info(f"Task started: {config['task_name']}")
     
-    def on_autopath_clicked(self):
-        """点击自动跑图按钮"""
-        logger.info("Autopath button clicked")
-        self.path_dialog = PathSelectionDialog(self)
-        self.path_dialog.path_selected.connect(self.on_path_selected)
-        self.path_dialog.show_centered()
-        self.path_dialog.exec_()
-    
-    def on_path_selected(self, path_name):
-        """处理选中的路径"""
-        logger.info(f"Path selected: {path_name}")
-        
+    def start_task_with_path(self, config: dict, path_name: str):
+        """启动需要路径参数的任务"""
         # 检查是否已有任务在运行
         if self.task_worker and self.task_worker.isRunning():
             QMessageBox.warning(self, "提示", "已有任务正在运行中，请稍候...")
@@ -264,23 +281,25 @@ class IngameUI(QWidget):
         # 将焦点返回给游戏
         self.give_back_focus()
         
-        # 禁用按钮
-        self.autopath_button.setEnabled(False)
-        self.autopath_button.setText("⏳ 跑图中...")
+        # 禁用所有按钮
+        if self.function_view:
+            self.function_view.set_all_buttons_enabled(False)
         
         # 在聊天视图中显示消息
         if self.chat_view:
-            self.chat_view.add_message(f"开始自动跑图：{path_name}，按“引号”键，随时终止任务\n", 'ai')
-    
-        params = {
-            "path_name": path_name
-        }
-        self.task_worker = TaskCallWorker("load_path", params)
+            self.chat_view.add_message(f'开始自动跑图：{path_name}，按"引号"键，随时终止任务\n', 'ai')
+        
+        # 合并路径参数
+        params = dict(config.get('task_params', {}))
+        params['path_name'] = path_name
+        
+        # 创建并启动worker
+        self.task_worker = TaskCallWorker(config['task_name'], params)
         self.task_worker.progress.connect(self.on_task_progress)
         self.task_worker.finished.connect(self.on_task_finished)
         self.task_worker.start()
         
-        logger.info(f"Auto path task started: {path_name}")
+        logger.info(f"Task started: {config['task_name']} with path: {path_name}")
     
     def on_task_progress(self, message: str):
         """处理任务进度消息"""
@@ -290,11 +309,9 @@ class IngameUI(QWidget):
     
     def on_task_finished(self, success: bool, result):
         """处理任务完成"""
-        # 恢复按钮状态
-        self.dragon_button.setEnabled(True)
-        self.dragon_button.setText("🐉 一条龙")
-        self.autopath_button.setEnabled(True)
-        self.autopath_button.setText("🗺️ 自动跑图")
+        # 恢复所有按钮状态
+        if self.function_view:
+            self.function_view.set_all_buttons_enabled(True)
         
         if success:
             if self.chat_view:

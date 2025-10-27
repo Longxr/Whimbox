@@ -58,7 +58,7 @@ class AutoPathTask(TaskTemplate):
 
     def task_stop(self):
         if not self.need_stop():
-            super().task_stop(msg="手动停止跑图")
+            super().task_stop(message="手动停止跑图")
             self.clear_all()
             self.log_to_gui("手动停止跑图", is_error=True)
 

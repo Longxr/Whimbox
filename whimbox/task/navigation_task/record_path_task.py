@@ -117,6 +117,7 @@ class RecordPathTask(TaskTemplate):
                 target="",
                 region=region_name,
                 map=map_name,
+                update_time=time.strftime("%Y-%m-%d %H:%M:%S", now),
             ),
             points=self.path_point_list
         )
