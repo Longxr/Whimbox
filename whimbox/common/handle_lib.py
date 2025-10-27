@@ -49,6 +49,16 @@ class handle_obj():
         
         return True
 
+    def check_shape(self):
+        if self.handle:
+            _, _, width, height = win32gui.GetClientRect(self.handle)
+            if width == 1920 and height == 1080:
+                return True
+            else:
+                return False
+        return False
+            
+
 HANDLE_OBJ = handle_obj()
 
 if __name__ == '__main__':

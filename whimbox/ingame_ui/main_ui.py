@@ -231,9 +231,15 @@ class IngameUI(QWidget):
     
     def on_function_clicked(self, config: dict):
         """统一处理功能按钮点击"""
+        if not HANDLE_OBJ.check_shape():
+            self.chat_view.add_message("请先将显示模式设置为窗口模式，窗口分辨率设置为1920x1080", 'error')
+            self.switch_to_chat_view()
+            return
+        
         # 检查是否已有任务在运行
         if self.task_worker and self.task_worker.isRunning():
-            QMessageBox.warning(self, "提示", "已有任务正在运行中，请稍候...")
+            self.chat_view.add_message("已有任务正在运行中，请稍候...", "ai")
+            self.switch_to_chat_view()
             return
         
         # 切换到聊天视图
@@ -273,11 +279,6 @@ class IngameUI(QWidget):
     
     def start_task_with_path(self, config: dict, path_name: str):
         """启动需要路径参数的任务"""
-        # 检查是否已有任务在运行
-        if self.task_worker and self.task_worker.isRunning():
-            QMessageBox.warning(self, "提示", "已有任务正在运行中，请稍候...")
-            return
-        
         # 将焦点返回给游戏
         self.give_back_focus()
         

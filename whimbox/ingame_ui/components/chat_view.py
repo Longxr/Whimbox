@@ -1,11 +1,12 @@
-from typing import List, Callable, Optional
+from typing import List
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 from whimbox.common.logger import logger
-from .chat_message import ChatMessage, ChatMessageWidget
-from ..workers import QueryWorker
+from whimbox.ingame_ui.components.chat_message import ChatMessage, ChatMessageWidget
+from whimbox.ingame_ui.workers import QueryWorker
+from whimbox.common.handle_lib import HANDLE_OBJ
 
 
 class ChatView(QWidget):
@@ -233,6 +234,10 @@ class ChatView(QWidget):
     
     def send_message(self):
         """发送消息并处理"""
+        if not HANDLE_OBJ.check_shape():
+            self.add_message("请先将显示模式设置为窗口模式，窗口分辨率设置为1920x1080", 'error')
+            return
+
         text = self.input_line_edit.text().strip()
         if not text:
             return
