@@ -187,7 +187,7 @@ def wait_until_appear(obj, retry_time=3):
 
 
 def back_to_page_main():
-    while True:
+    while not global_stop_flag.is_set():
         if itt.get_img_existence(IconDungeonFeature):
             itt.key_press('backspace')
         elif itt.get_img_existence(IconPageMainFeature):
