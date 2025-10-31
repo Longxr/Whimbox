@@ -95,7 +95,7 @@ class ChatView(QWidget):
         # 输入区域
         input_layout = QHBoxLayout()
         self.input_line_edit = QLineEdit()
-        self.input_line_edit.setPlaceholderText("请输入命令...")
+        self.input_line_edit.setPlaceholderText("按 / 进入奇想盒")
         self.input_line_edit.returnPressed.connect(self.send_message)
         self.input_line_edit.setStyleSheet("""
             QLineEdit {
@@ -109,9 +109,6 @@ class ChatView(QWidget):
             QLineEdit:focus {
                 border: 2px solid #2196F3;
                 background-color: #FAFAFA;
-            }
-            QLineEdit::placeholder {
-                color: #9E9E9E;
             }
         """)
         

@@ -73,8 +73,12 @@ class IngameUI(QWidget):
         # 创建展开状态组件
         self.create_expanded_widget()
         
-        # 默认显示收缩状态
-        self.show_collapsed()
+        # 默认显示展开状态
+        self.show_expanded()
+        
+        # 添加欢迎消息（仅在首次展开时）
+        if self.chat_view and not self.chat_view.has_messages():
+            self.chat_view.add_message("👋 您好！我是奇想盒📦，你可以直接选择功能，或者和我聊天。", 'ai')
     
     def create_expanded_widget(self):
         """创建展开状态的聊天界面"""
@@ -95,7 +99,7 @@ class IngameUI(QWidget):
         
         # 标题栏
         title_layout = QHBoxLayout()
-        title_label = QLabel("📦奇想盒")
+        title_label = QLabel("📦 奇想盒")
         title_label.setStyleSheet("""
             QLabel {
                 background-color: transparent;
@@ -354,10 +358,6 @@ class IngameUI(QWidget):
         
         # 延迟设置焦点，确保窗口完全展开
         QTimer.singleShot(100, lambda: self.chat_view.set_focus_to_input() if self.chat_view else None)
-        
-        # 添加欢迎消息（仅在首次展开时）
-        if self.chat_view and not self.chat_view.has_messages():
-            self.chat_view.add_message("👋 您好！我是奇想盒📦，你可以直接选择功能，或者和我聊天。", 'ai')
     
     def collapse_chat(self):
         """收缩聊天界面"""
@@ -433,14 +433,12 @@ class IngameUI(QWidget):
         """处理斜杠键按下事件"""
         if win32gui.GetForegroundWindow() != HANDLE_OBJ.get_handle():
             return
-        logger.info("Slash pressed - expanding chat")
         self.expand_chat()
     
     def on_esc_pressed(self):
         """处理ESC键按下事件"""
         if win32gui.GetForegroundWindow() != int(self.winId()):
             return
-        logger.info("Esc pressed - collapsing chat")
         if self.is_expanded:
             self.collapse_chat()
     
