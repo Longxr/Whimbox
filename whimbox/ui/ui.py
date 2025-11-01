@@ -31,12 +31,14 @@ class UI():
         ret_page = None
         title_text = itt.ocr_single_line(area = AreaPageTitleFeature)
         for page in ui_pages:
-            if isinstance(page, TitlePage) and page.title == title_text:
-                ret_page = page
-                break
-            elif page.is_current_page(itt):
-                ret_page = page
-                break
+            if isinstance(page, TitlePage):
+                if page.title == title_text:
+                    ret_page = page
+                    break
+            else:
+                if page.is_current_page(itt):
+                    ret_page = page
+                    break
         if not ret_page:
             raise Exception("无法识别当前页面")
         else:
@@ -164,4 +166,4 @@ ui_control = UI()
 if __name__ == '__main__':
     # ui_control.goto_page(page_esc)
     # ui_control.goto_page(page_huanjing_jihua)
-    ui_control.goto_page(page_huanjing_monster)
+    ui_control.goto_page(page_photo)
