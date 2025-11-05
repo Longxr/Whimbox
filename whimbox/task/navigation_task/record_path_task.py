@@ -71,7 +71,7 @@ class RecordPathTask(TaskTemplate):
         if distance < not_teleport_offset:
             self._add_point(current_posi, POINT_TYPE_TARGET, MOVE_MODE_WALK, ACTION_TELEPORT)
         else:
-            raise Exception("起点与最近的传送点太远了，不予记录")
+            self.task_stop(message="起点与最近的传送点太远了，不予记录")
 
 
     @register_step("开始录制，按“分号”记录特殊点位")
