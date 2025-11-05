@@ -21,6 +21,12 @@ def run_app():
         logger.error("请用管理员权限运行")
         exit()
 
+    from importlib.metadata import version, PackageNotFoundError
+    try:
+        logger.info(f"奇想盒版本号: {version("whimbox")}")
+    except PackageNotFoundError:
+        logger.info(f"奇想盒版本号: 未知")
+
     if not os.path.exists(SCRIPT_PATH):
         os.makedirs(SCRIPT_PATH, exist_ok=True)
 
