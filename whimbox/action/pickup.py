@@ -28,7 +28,7 @@ class PickupTask(TaskTemplate):
                     break
                 else:
                     itt.key_press('f')
-                    itt.delay(0.5, comment="等待采集完成")
+                    itt.delay(0.8, comment="等待采集完成")
                     skip_to_page_main() # 获取到新物品时会弹出窗口，快速跳过
             else:
                 break
