@@ -13,6 +13,7 @@ from whimbox.common.logger import logger
 from whimbox.common.utils.posi_utils import *
 from whimbox.common.errors import BigMapTPError
 from whimbox.common.utils.ui_utils import *
+from whimbox.common.cvars import global_stop_flag
 
 import threading
 import time
@@ -179,9 +180,11 @@ class Map(MiniMap, BigMap):
     def maximize_bigmap_scale(self) -> None:
         # todo：原地tp，会导致ButtonBigMapZoom被弹出的传送菜单遮挡，无法继续
         ui_control.ensure_page(page_bigmap)
-        while not itt.get_img_existence(IconBigMapMaxScale):
+        times = 3
+        while times > 0 and not itt.get_img_existence(IconBigMapMaxScale) and not global_stop_flag.is_set():
             itt.appear_then_click(ButtonBigMapZoom)
             time.sleep(0.5)
+            times -= 1
 
     def get_bigmap_posi(self, is_upd=True) -> t.Tuple[float, float]:
         self.maximize_bigmap_scale()
@@ -351,7 +354,7 @@ class Map(MiniMap, BigMap):
                 raise BigMapTPError("大地图传送失败")
 
         # 等待传送完成
-        while not (ui_control.verify_page(page_main)):
+        while not (ui_control.verify_page(page_main)) and not global_stop_flag.is_set():
             time.sleep(0.5)
 
         self.init_position(tp_posi)
