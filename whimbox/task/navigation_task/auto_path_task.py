@@ -42,6 +42,9 @@ class AutoPathTask(TaskTemplate):
 
         # 各类材料获取任务的结果记录
         self.material_count_dict = {}
+        # 动作控制器线程
+        self.move_controller = None
+        self.jump_controller = None
 
         # 一些常量
         self.walk2jump_stop_time = 0.5
