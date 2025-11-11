@@ -6,6 +6,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from whimbox.common.logger import logger
 import aiohttp
 from whimbox.config.config import global_config
+from datetime import timedelta
 
 
 async def is_mcp_ready(url: str) -> bool:
@@ -72,10 +73,12 @@ class Agent:
                 await asyncio.sleep(0.5)
             if flag:
                 logger.debug("MCP server ready")
+                mcp_timeout = timedelta(seconds=global_config.get_int("General", "mcp_timeout"))  # 10分钟
                 client = MultiServerMCPClient({
                     "whimbox": {
                         "url": mcp_url,
                         "transport": "streamable_http",
+                        "sse_read_timeout": mcp_timeout,  # SSE流读取超时
                     }
                 })
                 self.tools = await client.get_tools()

@@ -41,6 +41,7 @@ class TaskCallWorker(QThread):
     
     async def _call_tool(self):
         """异步调用工具"""
-        async with Client(self.mcp_url) as client:
+        mcp_timeout = global_config.get_int("General", "mcp_timeout") # 10分钟
+        async with Client(self.mcp_url, timeout=mcp_timeout) as client:
             result = await client.call_tool(self.tool_name, self.params)
             return result
