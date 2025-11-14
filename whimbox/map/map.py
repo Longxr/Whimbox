@@ -356,8 +356,9 @@ class Map(MiniMap, BigMap):
         # 等待传送完成
         while not (ui_control.verify_page(page_main)) and not global_stop_flag.is_set():
             time.sleep(0.5)
+        itt.wait_until_stable(threshold=0.9)
 
-        self.init_position(tp_posi)
+        self.init_position(tp_posi) 
 
         return tp_posi
 

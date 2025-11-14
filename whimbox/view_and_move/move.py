@@ -119,6 +119,7 @@ class MoveController(AdvanceThreading):
         self.last_posi_time = 0
         # self.move_speed = 12 # 默认移动速度：12px/s
         self.move_speed_list = [12 for i in range(5)]
+        self.loop_time_list = [0.2 for i in range(5)]
 
     def _update_move_speed(self, speed):
         self.move_speed_list.append(speed)
@@ -128,7 +129,15 @@ class MoveController(AdvanceThreading):
         # 去掉最大值和最小值，剩余取平均值
         return (sum(self.move_speed_list) - max(self.move_speed_list) - min(self.move_speed_list)) / (len(self.move_speed_list) - 2)
 
-    def start_move_ahead(self, current_posi, target_posi, offset):
+    def _update_loop_time(self, once_loop_time):
+        self.loop_time_list.append(once_loop_time)
+        self.loop_time_list.pop(0)
+
+    def _estimate_loop_time(self):
+        loop_time = (sum(self.loop_time_list) - max(self.loop_time_list) - min(self.loop_time_list)) / (len(self.loop_time_list) - 2)
+        return round(loop_time, 2)
+
+    def start_move_ahead(self, current_posi, target_posi, offset, once_loop_time):
         # 更新历史移动速度
         now_time = time.time()
         if self.last_posi != None:
@@ -140,24 +149,23 @@ class MoveController(AdvanceThreading):
         self.last_posi = current_posi
         self.last_posi_time = now_time
 
+        # 更新运行时间
+        if once_loop_time > 0:
+            self._update_loop_time(once_loop_time)
+
         # 估算移动时间
         speed = self._estimate_move_speed()
         target_dist = euclidean_distance(current_posi, target_posi)
-        # 减去magic数字，避免移动过头
-        # todo: 根据电脑性能动态计算这个magic，大致等于一次auto_path_task的inner_step循环的耗时。可能还有其他更好的预估移动时间的方式
-        duration = target_dist / speed - 0.2
+        loop_time = self._estimate_loop_time()
+        duration = target_dist / speed - loop_time
         if duration < 0.05:
             duration = 0.05
-        # if target_dist < offset:
-        #     duration /= 2
-        #     logger.debug(f"distance to target is less than offset, move slowly")
-        # logger.debug(f"move speed: {speed}, duration: {duration}")
 
         # 开始移动
         itt.key_down('w')
         self.is_moving = True
         self.move_ahead_timer = AdvanceTimer(duration).start()
-        logger.debug(f'start move ahead, duration: {duration}')
+        logger.debug(f'start move ahead, duration: {duration}, loop_time: {loop_time}')
 
     def stop_move_ahead(self):
         self.is_moving = False

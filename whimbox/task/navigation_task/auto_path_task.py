@@ -39,6 +39,7 @@ class AutoPathTask(TaskTemplate):
         self.need_move_mode = MOVE_MODE_WALK
         self.last_need_move_mode = MOVE_MODE_WALK
         self.current_game_move_mode = MOVE_MODE_WALK
+        self.once_loop_time = 0
 
         # 各类材料获取任务的结果记录
         self.material_count_dict = {}
@@ -76,7 +77,7 @@ class AutoPathTask(TaskTemplate):
     
     def start_move(self, current_posi, target_posi, offset):
         if self.move_controller:
-            self.move_controller.start_move_ahead(current_posi, target_posi, offset)
+            self.move_controller.start_move_ahead(current_posi, target_posi, offset, self.once_loop_time)
 
     def stop_move(self):
         if self.move_controller:
@@ -132,12 +133,8 @@ class AutoPathTask(TaskTemplate):
 
     @register_step("自动跑图中……")
     def step1(self):
-        last_t = time.time()
         while not self.need_stop():
-            if DEBUG_MODE:
-                t = time.time()
-                print(f"cost {round(t - last_t, 2)}")
-                last_t = t
+            start_time = time.time()
             is_end = self.inner_step_update_target()
             if is_end:
                 break
@@ -153,6 +150,7 @@ class AutoPathTask(TaskTemplate):
                 break
             self.inner_step_control_move()
             time.sleep(self.step_sleep)
+            self.once_loop_time = time.time() - start_time
         return "step2"
 
 
