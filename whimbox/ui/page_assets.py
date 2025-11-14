@@ -1,7 +1,7 @@
 from whimbox.ui.page import UIPage, TitlePage
 from whimbox.ui.ui_assets import *
 
-page_loading = UIPage(check_icon=[IconUILoading1, IconUILoading2])
+page_loading = UIPage(check_icon=IconUILoading)
 
 page_main = UIPage(check_icon=IconPageMainFeature)
 page_bigmap = UIPage(check_icon=IconUIBigmap)

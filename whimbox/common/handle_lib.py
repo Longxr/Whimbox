@@ -51,17 +51,10 @@ class handle_obj():
 
     def check_shape(self):
         if self.handle:
-            left, top, right, bottom = win32gui.GetWindowRect(self.handle)
-            width = right - left
-            height = bottom - top
-            if width == 1920 and height == 1080:
-                # 全屏或者无边框模式，不行
-                return False, width, height
-            if 1920<width<2000 and 1080<height<1200:
-                # 1920x1080窗口模式，可以
+            _, _, width, height = win32gui.GetClientRect(self.handle)
+            if width/height == 1920/1080:
                 return True, width, height
             else:
-                # 其他分辨率，不行
                 return False, width, height
         return False, 0, 0
             

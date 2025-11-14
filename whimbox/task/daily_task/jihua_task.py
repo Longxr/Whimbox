@@ -38,7 +38,7 @@ class JihuaTask(TaskTemplate):
 
     @register_step("正在前往激化台")
     def step3(self):
-        if not wait_until_appear(IconDungeonFeature, retry_time=10):
+        if not wait_until_appear(IconPageMainFeature, retry_time=10):
             raise Exception("未进入素材激化幻境")
         
         retry_time = 3
@@ -73,7 +73,7 @@ class JihuaTask(TaskTemplate):
             raise Exception(f"{self.cost_material}不能用于激化")
         
         itt.wait_until_stable()
-        if not scroll_find_click(AreaJihuaCostSelect, material_info["icon"], threshold=0.7, scale=0.5):
+        if not scroll_find_click(AreaJihuaCostSelect, material_info["icon"], threshold=0.75, scale=0.5):
             raise Exception(f"未找到消耗材料{self.cost_material}")
 
 
@@ -114,7 +114,7 @@ class JihuaTask(TaskTemplate):
 
     @register_step("退出激化幻境")
     def step9(self):
-        if wait_until_appear(IconDungeonFeature):
+        if wait_until_appear(IconPageMainFeature):
             itt.key_press('backspace')
             return
         raise Exception("退不出激化幻境了？！")

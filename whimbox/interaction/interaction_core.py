@@ -424,7 +424,8 @@ class InteractionBGD:
         self.operation_lock.acquire()
         self.itt_exec.move_to(
             int(position[0]), 
-            int(position[1]), 
+            int(position[1]),
+            resolution=self.capture_obj.resolution,
             relative=relative, 
             isBorderlessWindow=self.isBorderlessWindow)
         self.operation_lock.release()
@@ -443,6 +444,7 @@ class InteractionBGD:
         self.itt_exec.move_to(
             int(position[0]), 
             int(position[1]), 
+            resolution=self.capture_obj.resolution,
             relative=False, 
             isBorderlessWindow=self.isBorderlessWindow)
         time.sleep(delay)

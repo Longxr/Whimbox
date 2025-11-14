@@ -37,7 +37,7 @@ whimbox init
     },
 ```
 4. 将 [跑图路线仓库](https://github.com/nikkigallery/WhimboxScripts) 中的路线脚本下载下来，放到`scripts`目录里
-5. 打开游戏，将游戏设置为窗口模式，分辨率1920*1080
+5. 打开游戏，将游戏的分辨率设置为标准的16:9，比如：1920x1080、2560x1440、3840x2160
 6. 用管理员权限运行如下命令，启动奇想盒
 ```shell
 whimbox

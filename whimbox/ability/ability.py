@@ -48,7 +48,7 @@ class AbilityManager:
         for icon in ability_hsv_icons:
             resize_icon = cv2.resize(icon.image, None, fx=0.63, fy=0.63, interpolation=cv2.INTER_LINEAR)
             rate = similar_img(img, resize_icon[:, :, 0], ret_mode=IMG_RATE)
-            if rate > 0.85:
+            if rate > 0.8:
                 return icon_name_to_ability_name.get(icon.name, None)
         return None
 
@@ -66,7 +66,7 @@ class AbilityManager:
         img = self._get_ability_hsv_icon(jump_ability_center, cap)
         for icon in jump_ability_hsv_icons:
             rate = similar_img(img, icon.image[:, :, 0], ret_mode=IMG_RATE)
-            if rate > 0.92:
+            if rate > 0.8:
                 ability_name = icon_name_to_ability_name.get(icon.name, None)
                 if ability_name is not None:
                     self.jump_ability = ability_name
@@ -82,7 +82,7 @@ class AbilityManager:
             img = self._get_ability_hsv_icon(center, cap)
             for icon in ability_hsv_icons:
                 rate = similar_img(img, icon.image[:, :, 0], ret_mode=IMG_RATE)
-                if rate > 0.92:
+                if rate > 0.8:
                     logger.debug(f'{icon.name} rate: {rate}')
                     ability_name = icon_name_to_ability_name.get(icon.name, None)
                     if ability_name is None:
@@ -212,3 +212,6 @@ if __name__ == "__main__":
     # CV_DEBUG_MODE = True
     ability_manager.change_ability(ABILITY_NAME_FISH)
     # print(ability_manager.get_current_ability())
+    # ability_manager._check_jump_ability()
+    # ability_manager._check_ability_keymap()
+    # print(ability_manager.ability_keymap)

@@ -4,8 +4,6 @@ import time
 from whimbox.common import timer_module
 import numpy as np
 from whimbox.common.handle_lib import HANDLE_OBJ
-from numpy import ndarray
-# import mss
 import win32ui
 import cv2
 import win32gui
@@ -17,6 +15,7 @@ from whimbox.common.cvars import DEBUG_MODE
 class Capture():
     def __init__(self):
         self.capture_cache = np.zeros_like((1080,1920,3), dtype="uint8")
+        self.resolution = None
         self.max_fps = 30
         self.fps_timer = timer_module.Timer(diff_start_time=1)
         self.capture_cache_lock = threading.Lock()
@@ -24,8 +23,19 @@ class Capture():
         self.cap_per_sec = timer_module.CyclicCounter(limit=3).start()
         self.last_cap_times = 0
 
-    def _cover_privacy(self, img: ndarray) -> ndarray:
+    def _cover_privacy(self, img: np.ndarray) -> np.ndarray:
         return img
+
+    def _normalize_shape(self, img: np.ndarray) -> np.ndarray:
+        if self._check_shape(img):
+            self.resolution = img.shape[:2]
+            if img.shape == (1080,1920,4):
+                return img
+            else:
+                return cv2.resize(img, (1920, 1080), interpolation=cv2.INTER_AREA)
+        else:
+            self.resolution = None
+            return None
     
     def _get_capture(self) -> np.ndarray:
         """
@@ -71,16 +81,12 @@ class Capture():
             self.capture_cache_lock.acquire()
             self.capture_times+=1
             while 1:
-                self.capture_cache = self._cover_privacy(self._get_capture())
-                if not self._check_shape(self.capture_cache):
-                    logger.warning(
-                        "Fail to get capture: "+
-                        f"shape: {self.capture_cache.shape},"+
-                        " waiting 2 sec.\n"+
-                        "请确认游戏窗口没有最小化，分辨率为1080p")
-                    time.sleep(2)
-                else:
+                normalized_img = self._normalize_shape(self._get_capture())
+                if normalized_img is not None:
+                    self.capture_cache = normalized_img
                     break
+                else:
+                    time.sleep(2)
             self.capture_cache_lock.release()
         else:
             pass
@@ -180,43 +186,8 @@ class BitbltCapture(Capture):
         ret = np.frombuffer(buffer, dtype=np.uint8).reshape(height, width, 4)
         return ret
     
-    def _cover_privacy(self, img) -> ndarray:
+    def _cover_privacy(self, img) -> np.ndarray:
         img[1053 : 1075, 1770 : 1863, :3] = 128
-        return img
-
-
-class MssCapture(Capture):
-    def __init__(self):
-        super().__init__()
-        self.max_fps = 30
-
-    def _check_shape(self, img:np.ndarray):
-        if img.shape == (1080,1920,4):
-            return True
-        else:
-            logger.info("游戏分辨率异常: "+str(img.shape))
-            return False
-
-    def _get_capture(self):
-        hwnd = HANDLE_OBJ.get_handle()
-        rect = win32gui.GetClientRect(hwnd)
-        point1 = win32gui.ClientToScreen(hwnd, (rect[0], rect[1]))
-        point2 = win32gui.ClientToScreen(hwnd, (rect[2], rect[3]))
-        left, top = point1
-        right, bottom = point2
-        with mss.mss() as sct:
-            img = sct.grab(
-                {
-                    "left": left,
-                    "top": top,
-                    "width": right - left,
-                    "height": bottom - top
-                }
-            )
-            img = np.array(img)
-            return img
-    
-    def _cover_privacy(self, img) -> ndarray:
         return img
     
 class PrintWindowCapture(Capture):
@@ -225,7 +196,7 @@ class PrintWindowCapture(Capture):
         self.max_fps = 30
 
     def _check_shape(self, img:np.ndarray):
-        if img.shape == (1080,1920,4):
+        if img.shape[2] == 4 and img.shape[1]/img.shape[0] == 1920/1080:
             return True
         else:
             logger.info("游戏分辨率异常: "+str(img.shape))
@@ -262,7 +233,6 @@ class PrintWindowCapture(Capture):
 
 if __name__ == '__main__':
     c = PrintWindowCapture()
-    # c = MssCapture()
     while 1:
         cv2.imshow("capture test", c.capture())
         cv2.waitKey(10)

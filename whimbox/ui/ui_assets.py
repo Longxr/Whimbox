@@ -7,20 +7,19 @@ from whimbox.ui.template.text_manager import TextTemplate, Text
 AreaPageTitleFeature = Area()
 
 # 主界面、esc菜单相关
-IconPageMainFeature = ImgIcon(print_log=LOG_NONE, threshold=0.999)
-IconDungeonFeature = ImgIcon(print_log=LOG_NONE, threshold=0.99)
+IconPageMainFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+IconDungeonFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
 AreaUITime = Area()
 AreaEscEntrances = Area()
 
 # loading界面
-IconUILoading1 = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
-IconUILoading2 = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+IconUILoading = ImgIcon(print_log=LOG_WHEN_TRUE)
 
 # 大地图相关
-IconUIBigmap = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
-IconBigMapMaxScale = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonBigMapZoom = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonBigMapTeleport = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+IconUIBigmap = ImgIcon(print_log=LOG_WHEN_TRUE)
+IconBigMapMaxScale = ImgIcon(print_log=LOG_WHEN_TRUE)
+ButtonBigMapZoom = Button(print_log=LOG_WHEN_TRUE)
+ButtonBigMapTeleport = ImgIcon(print_log=LOG_WHEN_TRUE)
 AreaBigMapRegionName = Area()
 AreaBigMapRegionSelect = Area()
 AreaBigMapTeleporterSelect = Area()
@@ -43,7 +42,7 @@ AreaMaterialGetText = Area()
 AreaAbilityButton = Area()
 
 # 钓鱼相关
-IconFishingNoFish = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99) # 鱼掉光时候的图标
+IconFishingNoFish = ImgIcon(print_log=LOG_WHEN_TRUE) # 鱼掉光时候的图标
 AreaFishingDetection = Area()  # B区域（鱼进度检测区域）
 IconFishingReelIn = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.8)  # 收竿图标
 IconFishingStrike = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.8) # 提竿图标
@@ -53,7 +52,7 @@ IconFishingReelLine = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.8)  # 收线�
 IconFishingSkip = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.8) # 跳过
 
 # 幻境挑战页面
-ButtonHuanjingGo = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonHuanjingGo = Button(print_log=LOG_WHEN_TRUE)
 AreaHuanjingMonsterEntrace = Area()
 TextHuanjingMonsterEntrace = Text("魔物试炼幻境", cap_area = AreaHuanjingMonsterEntrace)
 AreaHuanjingBlessEntrace = Area()
@@ -69,55 +68,55 @@ TextHuanjingBossEntrace = Text("心之突破幻境", cap_area = AreaHuanjingBoss
 AreaBlessHuanjingLevelsSelect = Area()
 AreaBlessHuanjingDifficulty3 = Area()
 TextBlessHuanjingDifficulty3 = Text("困难", cap_area = AreaBlessHuanjingDifficulty3)
-ButtonBlessHuanjingQuickPlay = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonBlessHuanjingNumMax = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonBlessHuanjingConfirm = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonBlessHuanjingQuickPlay = Button(print_log=LOG_WHEN_TRUE)
+ButtonBlessHuanjingNumMax = Button(print_log=LOG_WHEN_TRUE)
+ButtonBlessHuanjingConfirm = Button(print_log=LOG_WHEN_TRUE)
 
 # 素材激化幻境相关
-ButtonJihuaInnerGo = Button(print_log=LOG_WHEN_TRUE,threshold=0.99)
+ButtonJihuaInnerGo = Button(print_log=LOG_WHEN_TRUE)
 AreaTextJihuatai = Area()
 TextJihuatai = Text("打开素材激化台", cap_area = AreaTextJihuatai)
 AreaJihuaTargetSelect = Area()
 AreaJihuaCostSelect = Area()
-ButtonJihuaNumMax = Button(print_log=LOG_WHEN_TRUE,threshold=0.99)
-ButtonJihuaNumConfirm = Button(print_log=LOG_WHEN_TRUE,threshold=0.99)
-ButtonJihuaFinallyConfirm = Button(print_log=LOG_WHEN_TRUE,threshold=0.99)
+ButtonJihuaNumMax = Button(print_log=LOG_WHEN_TRUE)
+ButtonJihuaNumConfirm = Button(print_log=LOG_WHEN_TRUE)
+ButtonJihuaFinallyConfirm = Button(print_log=LOG_WHEN_TRUE)
 
 # 魔物试炼幻境相关
 # 基本可以复用祝福闪光幻境
 
 # 美鸭梨挖掘相关
-ButtonDigGather = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonDigGatherConfirm = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonDigAgain = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonDigGather = Button(print_log=LOG_WHEN_TRUE)
+ButtonDigGatherConfirm = Button(print_log=LOG_WHEN_TRUE)
+ButtonDigAgain = Button(print_log=LOG_WHEN_TRUE)
 AreaDigingNumText = Area()
 AreaDigMainTypeSelect = Area()
 AreaDigSubTypeSelect = Area()
 AreaDigItemSelect = Area()
-ButtonDigConfirm = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonDigTime20h = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonDigConfirm = Button(print_log=LOG_WHEN_TRUE)
+ButtonDigTime20h = Button(print_log=LOG_WHEN_TRUE)
 
 # 朝夕心愿相关
-ButtonZxxyEntrance = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-IconUIZxxy = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonZxxyEntrance = Button(print_log=LOG_WHEN_TRUE)
+IconUIZxxy = ImgIcon(print_log=LOG_WHEN_TRUE)
 AreaZxxyScore = Area()
-ButtonZxxyRewarded = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonZxxyRewarded = Button(print_log=LOG_WHEN_TRUE)
 ButtonZxxyTask1 = Button()
 ButtonZxxyTask2 = Button()
 ButtonZxxyTask3 = Button()
 ButtonZxxyTask4 = Button()
 ButtonZxxyTask5 = Button()
 AreaZxxyTaskText = Area()
-IconUIZxxyTaskFinished = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+IconUIZxxyTaskFinished = ImgIcon(print_log=LOG_WHEN_TRUE)
 
 # 星海拾遗相关
-ButtonXhsyEntrance = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-IconUIXhsy = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonXhsyEntrance = Button(print_log=LOG_WHEN_TRUE)
+IconUIXhsy = ImgIcon(print_log=LOG_WHEN_TRUE)
 
 # 换装界面
 AreaWardrobeTab1 = Area()
 TextWardrobeDressTab = Text("换装", cap_area = AreaWardrobeTab1)
-ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonWardrobeDressDIY = Button(print_log=LOG_WHEN_TRUE)
 
 # 能力配置界面
 AreaWardrobeTab3 = Area()
@@ -132,7 +131,7 @@ IconAbilityFish = ImgIcon()     # 钓鱼
 IconAbilityFly = ImgIcon()      # 滑翔
 IconAbilitySmall = ImgIcon()    # 变小
 AreaAbilityChange = Area()
-ButtonAbilitySave = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonAbilitySave = Button(print_log=LOG_WHEN_TRUE)
 AreaAbilityPlanChangeButton = Area()
 AreaAbilityPlan1Button = Area()
 AreaAbilityPlan2Button = Area()
@@ -148,15 +147,15 @@ IconMaterialTypeOther = ImgIcon()
 IconMaterialTypeDig1 = ImgIcon()
 
 # 拍照相关
-IconPhotoEdit = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.99)
+IconPhotoEdit = ImgIcon(print_log=LOG_WHEN_TRUE)
 IconPhotoDelete = ImgIcon()
-ButtonPhotoDeleteConfirm = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonPhotoDeleteConfirm = Button(print_log=LOG_WHEN_TRUE)
 
 # 大月卡，奇迹之旅
-ButtonMonthlyPassAward = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonMonthlyPassTab1 = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
-ButtonMonthlyPassTab2 = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonMonthlyPassAward = Button(print_log=LOG_WHEN_TRUE)
+ButtonMonthlyPassTab1 = Button(print_log=LOG_WHEN_TRUE)
+ButtonMonthlyPassTab2 = Button(print_log=LOG_WHEN_TRUE)
 
 # 奇迹之冠
 AreaMiraCrownOverview = Area()
-ButtonMiraCrownQuickPlay = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
+ButtonMiraCrownQuickPlay = Button(print_log=LOG_WHEN_TRUE)

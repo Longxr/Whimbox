@@ -100,9 +100,13 @@ class InteractionNormal(InteractionTemplate):
         time.sleep(0.05)
         self.key_up(key)
     
-    def move_to(self, x: int, y: int, relative=False, isBorderlessWindow=False):
+    def move_to(self, x: int, y: int, resolution=None, relative=False, isBorderlessWindow=False):
         x = int(x)
         y = int(y)
+
+        if resolution is not None:
+            x = int(x * resolution[0] / 1080)
+            y = int(y * resolution[1] / 1920)
 
         if relative:
             win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, x, y)

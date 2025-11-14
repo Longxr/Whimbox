@@ -356,11 +356,8 @@
   "IconUIDig": {
     "rel_path": "imgs\\Windows\\UI\\dig\\IconUIDig.png"
   },
-  "IconUILoading1": {
-    "rel_path": "imgs\\Windows\\UI\\IconUILoading1.png"
-  },
-  "IconUILoading2": {
-    "rel_path": "imgs\\Windows\\UI\\IconUILoading2.png"
+  "IconUILoading": {
+    "rel_path": "imgs\\Windows\\UI\\IconUILoading.png"
   },
   "IconUIXhsy": {
     "rel_path": "imgs\\Windows\\UI\\xhsy\\IconUIXhsy.png"
