@@ -8,10 +8,6 @@
             "value": "false",
             "description": "是否启用CV调试模式"
         },
-        "borderless_window": {
-            "value": "false",
-            "description": "游戏是否为无边框窗口"
-        },
         "ocr": {
             "value": "rapid",
             "description": "OCR引擎，可选：rapid"
@@ -19,10 +15,6 @@
         "mcp_port": {
             "value": 2333,
             "description": "MCP服务端口"
-        },
-        "mcp_timeout": {
-            "value": 600,
-            "description": "调用MCP服务的超时时间（秒）"
         }
     },
     "Agent": {

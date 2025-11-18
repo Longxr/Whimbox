@@ -100,7 +100,7 @@ class InteractionNormal(InteractionTemplate):
         time.sleep(0.05)
         self.key_up(key)
     
-    def move_to(self, x: int, y: int, resolution=None, relative=False, isBorderlessWindow=False):
+    def move_to(self, x: int, y: int, resolution=None, relative=False):
         x = int(x)
         y = int(y)
 

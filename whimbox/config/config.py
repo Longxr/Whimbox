@@ -58,6 +58,17 @@ class GlobalConfig:
                         user_config[section_name][key] = config_item
                     else:
                         user_config[section_name][key]['description'] = config_item['description']
+            # 删除已经不存在的配置项
+            sections_to_delete = [section_name for section_name in user_config 
+                                 if section_name not in DEFAULT_CONFIG]
+            for section_name in sections_to_delete:
+                del user_config[section_name]
+            for section_name in user_config:
+                keys_to_delete = [key for key in user_config[section_name] 
+                                if key not in DEFAULT_CONFIG[section_name]]
+                for key in keys_to_delete:
+                    del user_config[section_name][key]
+            # 保存更新后的配置
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(user_config, f, ensure_ascii=False, indent=4)
 

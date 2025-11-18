@@ -74,7 +74,6 @@ class InteractionBGD:
         logger.info("InteractionBGD created")
         self.WHEEL_DELTA = 120
         self.DEFAULT_DELAY_TIME = 0.05
-        self.isBorderlessWindow = global_config.get_bool('General', 'borderless_window')
         self.itt_exec = None
         self.capture_obj = None
         self.operation_lock = threading.Lock()
@@ -436,8 +435,7 @@ class InteractionBGD:
             int(position[0]), 
             int(position[1]),
             resolution=self.capture_obj.resolution,
-            relative=relative, 
-            isBorderlessWindow=self.isBorderlessWindow)
+            relative=relative)
         self.operation_lock.release()
 
 
@@ -455,8 +453,7 @@ class InteractionBGD:
             int(position[0]), 
             int(position[1]), 
             resolution=self.capture_obj.resolution,
-            relative=False, 
-            isBorderlessWindow=self.isBorderlessWindow)
+            relative=False)
         time.sleep(delay)
         
         if type == 'left':
@@ -467,12 +464,7 @@ class InteractionBGD:
             self.itt_exec.middle_click()
         
         self.operation_lock.release()
-
-    # @before_operation()
-    # def drag(self, origin_xy:list, targe_xy:list):
-    #     self.operation_lock.acquire()
-    #     self.itt_exec.drag(origin_xy, targe_xy, isBorderlessWindow=self.isBorderlessWindow)
-    #     self.operation_lock.release()
+        
             
     def save_snapshot(self, reason:str = ''):
         img = self.capture()
