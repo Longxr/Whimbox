@@ -31,7 +31,7 @@ def before_operation(print_log=False):
                 func_name_2 = inspect.getframeinfo(inspect.currentframe().f_back.f_back)[2]
                 logger.trace(f" operation: {func.__name__} | args: {args[1:]} | {kwargs} | function name: {func_name} & {func_name_2}")
             
-            if not itt._can_interact():
+            if not itt._can_interact(func.__name__):
                 raise Exception("中断操作：误入商城和抽卡界面")
 
             winname = get_active_window_process_name()
@@ -316,10 +316,11 @@ class InteractionBGD:
                 logger.debug('delay: ' + str(x) + ' |function name: ' + upper_func_name + ' |comment: ' + comment)
             time.sleep(x)
 
-    def _can_interact(self):
+    def _can_interact(self, func_name: str):
         # 判断是否在商城和抽卡界面，在的话禁止操作
-        if self.get_img_existence(IconShopFeature) or self.get_img_existence(IconGachaFeature):
-            return False
+        if func_name in ["left_click", "left_down", "left_double_click", "move_and_click"]:
+            if self.get_img_existence(IconShopFeature) or self.get_img_existence(IconGachaFeature):
+                return False
         return True
 
     @before_operation()
