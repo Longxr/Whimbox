@@ -19,11 +19,11 @@ def empty(a):
 cv2.namedWindow("TrackBars")  
 cv2.resizeWindow("TrackBars", 640, 300)  
 init_data = {
-    'h_min': 35,
-    'h_max': 50,
-    's_min': 15,
-    's_max': 20,
-    'v_min': 250,
+    'h_min': 25,
+    'h_max': 30,
+    's_min': 35,
+    's_max': 45,
+    'v_min': 249,
     'v_max': 255,
 }
 cv2.createTrackbar("Hue Min", "TrackBars", init_data['h_min'], 179, empty)  
@@ -38,12 +38,12 @@ if __name__ == "__main__" and True:
     from whimbox.interaction.interaction_core import itt
     from whimbox.ui.ui_assets import *
     from whimbox.common.utils.posi_utils import *
-    # from whimbox.common.path_lib import *
-    # org = cv2.imread(os.path.join(ROOT_PATH, "..", "tools", "snapshot", "1763299021.5629537.png"))
-    # img = org.copy()
+    from whimbox.common.path_lib import *
+    org = cv2.imread(os.path.join(ROOT_PATH, "..", "tools", "snapshot", "7D41A5127C42BA98B48324E85A28CB6A.png"))
+    img = org.copy()
     while True:
-        # img = crop(org, AreaMonopolyDiceNum.position)
-        img = itt.capture()
+        img = crop(org, AreaMonopolyDiceNum.position)
+        # img = itt.capture(posi=AreaMonopolyDiceNum.position)
         # 调用回调函数，获取滑动条的值  
         h_min, h_max, s_min, s_max, v_min, v_max = empty(0)  
         lower = np.array([h_min, s_min, v_min])  

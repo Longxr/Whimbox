@@ -10,6 +10,7 @@ from whimbox.ui.ui_assets import *
 from whimbox.common.utils.ui_utils import *
 from whimbox.common.logger import logger
 from whimbox.common.timer_module import AdvanceTimer
+import random
 
 question_answer_dict = {
     "不属于花园镇的搭配团": "美妆搭配团",
@@ -45,7 +46,7 @@ question_answer_dict = {
     "手套女士最后的名字": "罗丝妮丝",
     "缇米丝研发的什么东西": "超畅爽卸妆油",
     "弹射海豹最喜欢吃什么": "奇想鱼干",
-    "微光水潭有什么鱼": "蝴蝶结鱼",
+    "微光水潭": "蝴蝶结鱼",
     "哪个节日共燃愿望": "火冠节",
     "小石树田村染织工坊主兼村民自洽会": "司本多",
     "小石树田村最高的地方在哪里": "石之冠",
@@ -115,28 +116,12 @@ def find_arrows(cap):
 
 def choose_arrow(arrows):
     # 尽可能选择左下的箭头
-    target_arrow = None
-    arrow1 = arrows[0]
-    arrow2 = arrows[1]
-    # 在同一垂直线上，取下面的箭头
-    if abs(arrow1[0]-arrow2[0]) < 5:
-        if arrow1[1] < arrow2[1]:
-            target_arrow = arrow2
-        else:
-            target_arrow = arrow1
-    # 在同一水平线上，取左边的箭头
-    elif abs(arrow1[1]-arrow2[1]) < 5:
-        if arrow1[0] < arrow2[0]:
-            target_arrow = arrow1
-        else:
-            target_arrow = arrow2
-    # 在对角线上，取下面的箭头
-    else:
-        if arrow1[1] < arrow2[1]:
-            target_arrow = arrow2
-        else:
-            target_arrow = arrow1
-    return target_arrow
+    # 1. 找到最靠下的基准 Y
+    max_y = max(p[1] for p in arrows)
+    # 2. 选出所有 Y 在 max_y ± tolerance 内的点
+    bottom_candidates = [p for p in arrows if abs(p[1] - max_y) <= 5]
+    # 3. 在这些“最靠下”的点里找 X 最小的
+    return min(bottom_candidates, key=lambda p: p[0])
 
 class RollDiceTask(TaskTemplate):
     def __init__(self):
@@ -206,7 +191,7 @@ class RollDiceTask(TaskTemplate):
 
     def check_and_choose_arrow(self):
         arrows = find_arrows(itt.capture())
-        if len(arrows) == 2:
+        if 2 <= len(arrows) <= 3:
             logger.info(f"经过岔路, {arrows}")
             target = choose_arrow(arrows)
             itt.move_and_click(target)
@@ -282,18 +267,21 @@ class RollDiceTask(TaskTemplate):
             self.task_stop(message="骰子不可交互，请先手动完成进行中的事件")
             return
         # 获取骰子数量
-        max_try = 3
-        while max_try > 0:
-            dice_num_texts = itt.ocr_multiple_lines(AreaMonopolyDiceNum)
-            if len(dice_num_texts) != 4 and dice_num_texts[1] != "随心":
-                max_try -= 1
-                continue
-            self.control_dice_num = int(dice_num_texts[0])
-            self.random_dice_num = int(dice_num_texts[2])
-            self.rotate_dice_num = int(dice_num_texts[3])
-            break
+        try:
+            max_try = 3
+            while max_try > 0:
+                dice_num_texts = itt.ocr_multiple_lines(AreaMonopolyDiceNum)
+                if len(dice_num_texts) != 4 or dice_num_texts[1] != "随心":
+                    max_try -= 1
+                    continue
+                self.control_dice_num = int(dice_num_texts[0])
+                self.random_dice_num = int(dice_num_texts[2])
+                self.rotate_dice_num = int(dice_num_texts[3])
+                break
+        except Exception as e:
+            raise Exception("骰子数量识别异常")
         if max_try == 0:
-            raise Exception("骰子数量获取异常")
+            raise Exception("骰子数量识别异常")
         else:
             self.log_to_gui(f"基础骰子x{self.random_dice_num},旋转骰子x{self.rotate_dice_num},随心骰子x{self.control_dice_num}")
 
@@ -313,7 +301,9 @@ class RollDiceTask(TaskTemplate):
         if not self.in_loop_position:
             # 如果不处于刷问号阶段，就扔普通骰子
             if not self.play_random_dice():
-                return 'step4'
+                # 基础骰子不够，就扔随心骰子
+                if not self.play_control_dice(random.randint(4, 6)):
+                    return 'step4'
             # 如果已经在岔路，需要立刻点击箭头
             if not self.check_and_choose_arrow():
                 self.skip_play()
@@ -321,25 +311,28 @@ class RollDiceTask(TaskTemplate):
                 if not self.check_and_choose_arrow():
                     break
         else:
-            # 如果处于刷问号阶段，就开刷
-            if self.loop_position == "right" and self.direction == "left":
-                self.play_control_dice(1)
-                self.skip_play()
-                self.loop_position = "left"
-            elif self.loop_position == "right" and self.direction == "right":
-                self.play_rotate_dice()
-                self.play_control_dice(1)
-                self.skip_play()
-                self.loop_position = "left"
-            elif self.loop_position == "left" and self.direction == "left":
-                self.play_rotate_dice()
-                self.play_control_dice(1)
-                self.skip_play()
-                self.loop_position = "right"
-            elif self.loop_position == "left" and self.direction == "right":
-                self.play_control_dice(1)
-                self.skip_play()
-                self.loop_position = "right"
+            if self.control_dice_num > self.min_dice_num and self.rotate_dice_num > self.min_dice_num:
+                # 如果处于刷问号阶段，就开刷
+                if self.loop_position == "right" and self.direction == "left":
+                    self.play_control_dice(1)
+                    self.skip_play()
+                    self.loop_position = "left"
+                elif self.loop_position == "right" and self.direction == "right":
+                    self.play_rotate_dice()
+                    self.play_control_dice(1)
+                    self.skip_play()
+                    self.loop_position = "left"
+                elif self.loop_position == "left" and self.direction == "left":
+                    self.play_rotate_dice()
+                    self.play_control_dice(1)
+                    self.skip_play()
+                    self.loop_position = "right"
+                elif self.loop_position == "left" and self.direction == "right":
+                    self.play_control_dice(1)
+                    self.skip_play()
+                    self.loop_position = "right"
+            else:
+                return 'step4'
 
     
     def handle_question(self):
@@ -382,7 +375,7 @@ class RollDiceTask(TaskTemplate):
         logger.info(f"玩趣箱选项: {options}")
         target_box = None
         for option, box in options.items():
-            if "单次上限" in option or "下一次注入灵感" in option:
+            if "单次上限" in option or "下一次注入灵感" in option or "5200" in option:
                 target_box = box
                 break
         if target_box:
@@ -439,6 +432,10 @@ class RollDiceTask(TaskTemplate):
         elif itt.get_img_existence(ButtonMonopolyTaskFull):
             self.log_to_gui("处理事件：随机任务已满")
             itt.move_and_click(ButtonMonopolyTaskFull.click_position())
+        # 起点
+        elif itt.get_img_existence(ButtonMonopolyConfirmDailyAward):
+            self.log_to_gui("处理事件：起点")
+            itt.move_and_click(ButtonMonopolyConfirmDailyAward.click_position())
         
         if need_skip_play:
             self.skip_play()
