@@ -187,7 +187,7 @@ class RollDiceTask(TaskTemplate):
          # 通过esc返回再进入，快速跳过走路过程
         itt.key_press('esc')
         wait_until_appear_then_click(ButtonMonopolyEntrance)
-        itt.wait_until_stable(threshold=0.9, timeout=2)
+        itt.wait_until_stable(threshold=0.95, timeout=2)
 
     def check_and_choose_arrow(self):
         arrows = find_arrows(itt.capture())
@@ -257,12 +257,13 @@ class RollDiceTask(TaskTemplate):
     def step1(self):
         ui_control.goto_page(page_event)
         wait_until_appear_then_click(ButtonMonopolyEntrance)
-        itt.wait_until_stable(threshold=0.90, timeout=2)
+        itt.wait_until_stable(threshold=0.95, timeout=2)
         # 领取每日奖励
         wait_until_appear_then_click(ButtonMonopolyConfirmDailyAward)
         # 关闭弹幕
         if itt.get_img_existence(ButtonMonopolySendBullet):
             itt.move_and_click(ButtonMonopolyCloseBullet.click_position())
+        time.sleep(1)
         if not self.check_can_play():
             self.task_stop(message="骰子不可交互，请先手动完成进行中的事件")
             return
@@ -288,6 +289,10 @@ class RollDiceTask(TaskTemplate):
 
     @register_step("开始抛骰子")
     def step2(self):
+        # 先判断是否在岔路口，可能会因为各种随机事件被送过来
+        while True:
+            if not self.check_and_choose_arrow():
+                break
         # 等待骰子按钮可交互
         while not self.check_can_play() and not self.need_stop():
             logger.info("等待骰子按钮可交互")

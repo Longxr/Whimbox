@@ -103,7 +103,7 @@ class ZhaoxiTask(TaskTemplate):
     def step2(self):
         try:
             # time.sleep(2) # 等待分数变化
-            itt.wait_until_stable(threshold=0.90)
+            itt.wait_until_stable(threshold=0.95)
             score_str = itt.ocr_single_line(AreaZxxyScore)
             score = int(score_str.strip())
             if score % 100 != 0:
