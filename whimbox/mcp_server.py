@@ -213,7 +213,7 @@ async def monthly_pass_task() -> dict:
 @mcp.tool()
 async def roll_dice_task() -> dict:
     """
-    扔骰子
+    扔骰子(搓核弹)
     """
     roll_dice_task = RollDiceTask()
     task_result = roll_dice_task.task_run()
@@ -223,6 +223,7 @@ def start_mcp_server():
     logger.debug("开始初始化MCP服务器")
     mcp_port = global_config.get_int("General", "mcp_port")
     mcp.run(
+        show_banner=False,
         transport="streamable-http",
         host="0.0.0.0",
         port=mcp_port,

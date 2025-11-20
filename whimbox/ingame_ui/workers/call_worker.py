@@ -44,13 +44,12 @@ class TaskCallWorker(QThread):
     async def _call_tool(self):
         """异步调用工具"""
         try:
-            transport = StreamableHttpTransport(url=self.mcp_url)
+            transport = StreamableHttpTransport(url=self.mcp_url, sse_read_timeout=MCP_TOOL_TIMEOUT)
             client = Client(transport)
             async with client:
                 result = await client.call_tool(
                     self.tool_name, 
                     self.params,
-                    timeout=MCP_TOOL_TIMEOUT,
                 )
                 return result
         except Exception as e:
