@@ -20,7 +20,7 @@ question_answer_dict = {
     "带我逆流，带我逆流": "蓝眼泪",
     "女王行宫遗迹内部有个中央花坛": "小提琴",
     "服装升级不需要": "怦然思绪",
-    "花愿镇搭配师协会的管理者是谁": "达达",
+    "搭配师协会的管理者": "达达",
     "纪念公园的雕像缺了哪个部位": "头部",
     "假如毛毛的妈妈": "毛毛",
     "巨蛇遗迹位于哪个区域": "微风绿野",
@@ -63,7 +63,7 @@ question_answer_dict = {
     "以下哪个搭配师团不属于祈愿树林": "好绿野搭配师团",
     "以下哪种生物会出现在石树田无人区": "巡星天鹅",
     "以下谁不是搭配天王": "乔万尼",
-    "愿望梦境仓库有几座": "3",
+    "愿望梦境仓库": "3",
     "愿望球有哪几个": "绝望球",
     "有了美鸭梨": "搭配没压力",
     "祝福闪光有几种部件": "3",
@@ -280,8 +280,10 @@ class RollDiceTask(TaskTemplate):
                 self.rotate_dice_num = int(dice_num_texts[3])
                 break
         except Exception as e:
+            logger.error(f"骰子数量识别异常: {dice_num_texts}")
             raise Exception("骰子数量识别异常")
         if max_try == 0:
+            logger.error(f"骰子数量识别异常: {dice_num_texts}")
             raise Exception("骰子数量识别异常")
         else:
             self.log_to_gui(f"基础骰子x{self.random_dice_num},旋转骰子x{self.rotate_dice_num},随心骰子x{self.control_dice_num}")
@@ -380,7 +382,7 @@ class RollDiceTask(TaskTemplate):
         logger.info(f"玩趣箱选项: {options}")
         target_box = None
         for option, box in options.items():
-            if "单次上限" in option or "下一次注入灵感" in option or "5200" in option:
+            if "额外获得" in option or "单次上限" in option or "下一次注入灵感" in option or "5200" in option:
                 target_box = box
                 break
         if target_box:
@@ -455,8 +457,8 @@ class RollDiceTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    roll_dice_task = RollDiceTask()
-    roll_dice_task.task_run()
+    # roll_dice_task = RollDiceTask()
+    # roll_dice_task.task_run()
 
     # import os
     # from whimbox.common.path_lib import *
@@ -496,13 +498,16 @@ if __name__ == "__main__":
     #     rate, loc = similar_img(cap, IconMonopolyMapFeature2.image, ret_mode=IMG_RECT)
     #     print(rate, loc)
 
-    # import os
-    # from whimbox.common.path_lib import *
-    # # cap = cv2.imread(os.path.join(ROOT_PATH, "..", "tools", "snapshot", "1763299021.5629537.png"))
-    # # cap = crop(cap, AreaMonopolyDiceNum.position)
-    # # lower = [0, 0, 240]
-    # # upper = [180, 255, 255]
-    # # print(count_px_with_hsv_limit(cap, lower, upper))
+    import os
+    from whimbox.common.path_lib import *
+    cap = cv2.imread(os.path.join(ROOT_PATH, "..", "tools", "snapshot", "@_P(AHD0$IF5UUK0N42O%JC.png"))
+    cap = crop(cap, AreaMonopolyDiceNum.position)
+    # lower = [0, 0, 240]
+    # upper = [180, 255, 255]
+    # print(count_px_with_hsv_limit(cap, lower, upper))
+    from whimbox.api.ocr_rapid import ocr
+    result = ocr.get_all_texts(cap, mode=0)
+    print(result)
 
     # cap = cv2.imread(os.path.join(ROOT_PATH, "..", "tools", "snapshot", "1763253146.1713786.png"))
     # arrows = find_arrows(cap)
