@@ -70,8 +70,8 @@ class MaterialTrackBaseTask(TaskTemplate):
                 else:
                     # 能力图标开始发光，就暂停前进，避免走过头
                     itt.key_up(keybind.KEYBIND_FORWARD)
-                    # 当能力按钮连续亮起3次后，才开始采集
-                    if ability_active_times < 2:
+                    # 当能力按钮连续亮起2次后，才开始采集
+                    if ability_active_times < 1:
                         ability_active_times += 1
                         logger.debug(f"能力图标连续亮起{ability_active_times}次")
                     else:

@@ -272,6 +272,8 @@ class RollDiceTask(TaskTemplate):
             max_try = 3
             while max_try > 0:
                 dice_num_texts = itt.ocr_multiple_lines(AreaMonopolyDiceNum)
+                if '00' in dice_num_texts:
+                    dice_num_texts.remove('00')
                 if len(dice_num_texts) != 4 or dice_num_texts[1] != "随心":
                     max_try -= 1
                     continue
