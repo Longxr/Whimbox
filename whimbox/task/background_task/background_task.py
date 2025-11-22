@@ -4,6 +4,7 @@ from enum import Enum
 from whimbox.interaction.interaction_core import itt
 from whimbox.ui.ui_assets import *
 from whimbox.action.fishing import FishingTask
+from whimbox.action.skip_dialog import SkipDialogTask
 from whimbox.common.logger import logger
 from whimbox.common.cvars import has_foreground_task
 from whimbox.common.utils.img_utils import crop
@@ -146,14 +147,14 @@ class BackgroundTask:
                 try:
                     cap = itt.capture()
                     
-                    # 1. 检测钓鱼状态
+                    # 检测钓鱼状态
                     if self.manager.is_feature_enabled(BackgroundFeature.AUTO_FISHING):
                         if self._detect_fishing_opportunity(cap):
                             self._execute_fishing()            
                     
-                    # 3. 检测对话状态
+                    # 检测对话状态
                     if self.manager.is_feature_enabled(BackgroundFeature.AUTO_DIALOGUE):
-                        if self._detect_dialogue_opportunity():
+                        if self._detect_dialogue_opportunity(cap):
                             self._execute_dialogue()
                             
                 except Exception as e:
@@ -169,19 +170,9 @@ class BackgroundTask:
     
     def _detect_fishing_opportunity(self, cap) -> bool:
         """检测是否可以钓鱼"""
-        try:
-            # 检测钓鱼图标
-            cap = crop(cap, IconBGFishingFeature.cap_posi)
-            if itt.get_img_existence(IconBGFishingFeature, cap=cap):
-                return True
-        except Exception as e:
-            logger.debug(f"钓鱼检测失败: {e}")
-        return False
-    
-    def _detect_dialogue_opportunity(self) -> bool:
-        """检测是否出现对话框"""
-        # TODO: 实现对话框检测逻辑
-        # 需要检测对话框相关的UI元素
+        cap = crop(cap, IconBGFishingFeature.cap_posi)
+        if itt.get_img_existence(IconBGFishingFeature, cap=cap):
+            return True
         return False
     
     def _execute_fishing(self):
@@ -198,16 +189,20 @@ class BackgroundTask:
                 self.log_to_gui(f"自动钓鱼失败: {fishing_task.task_result.message}", type="finalize_ai_message")
         except Exception as e:
             logger.error(f"自动钓鱼出错: {e}")
+
+    def _detect_dialogue_opportunity(self, cap) -> bool:
+        """检测是否进入对话"""
+        cap = crop(cap, IconSkipDialog.cap_posi)
+        if itt.get_img_existence(IconSkipDialog, cap=cap):
+            return True
+        return False
     
     def _execute_dialogue(self):
         """执行对话任务"""
-        try:
-            # TODO: 实现自动对话逻辑
-            from whimbox.common.keybind import keybind
-            itt.key_press(keybind.KEYBIND_INTERACTION)
-        except Exception as e:
-            logger.error(f"自动对话出错: {e}")
-    
+        self.log_to_gui("检测到对话界面，开始自动对话", type="add_ai_message")
+        skip_dialog_task = SkipDialogTask()
+        skip_dialog_task.task_run()
+        self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
 
 
 if __name__ == "__main__":

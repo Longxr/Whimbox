@@ -184,3 +184,4 @@ ButtonMonopolyTaskFull = Button(print_log=LOG_WHEN_TRUE, threshold=0.99)
 
 # 后台任务
 IconBGFishingFeature = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.75, gray_limit=(210, 255))
+IconSkipDialog = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.75, gray_limit=(210, 255))
