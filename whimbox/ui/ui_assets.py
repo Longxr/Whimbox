@@ -42,9 +42,9 @@ AreaMaterialGetText = Area()
 AreaAbilityButton = Area()
 
 # 钓鱼相关
-IconFishingNoFish = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.94) # 鱼掉光时候的图标
+IconFishingNoFish = ImgIcon(print_log=LOG_WHEN_TRUE, threshold=0.98, hsv_limit=([0,0,175], [20,255,255])) # 鱼掉光时候的图标
 AreaFishingDetection = Area()  # B区域（鱼进度检测区域）
-IconFishingFinish = ImgIcon(print_log=LOG_NONE, threshold=0.75)  # 收竿图标
+IconFishingFinish = ImgIcon(print_log=LOG_NONE, threshold=0.80)  # 收竿图标，容易和收线图标识别错，提高点阈值
 IconFishingStrike = ImgIcon(print_log=LOG_NONE, threshold=0.75) # 提竿图标
 IconFishingPullLine = ImgIcon(print_log=LOG_NONE, threshold=0.75)  # 拉扯鱼线图标1
 IconFishingPullLineAlt = ImgIcon(print_log=LOG_NONE, threshold=0.75)  # 拉扯鱼线图标2-采星

@@ -85,11 +85,11 @@ class FishingTask(TaskTemplate):
         """
         itt.key_down(key)
         while not self.need_stop():
-            time.sleep(0.3)
+            time.sleep(0.2)
             cap = itt.capture(posi=AreaFishingDetection.position)
             current_px_count = count_px_with_hsv_limit(cap, hsv_limit[0], hsv_limit[1])
             logger.debug(f"尝试方向: {key}, {px_count} -> {current_px_count}")
-            if current_px_count <= px_count:
+            if px_count - current_px_count > 20 or current_px_count == 0:
                 px_count = current_px_count
                 if px_count == 0:
                     break
@@ -214,6 +214,7 @@ class FishingTask(TaskTemplate):
                 time.sleep(0.5)
             return FishingResult.NO_FISH
         
+        unknown_state_count = 0
         while not self.need_stop():
             if idle_timer.started() and idle_timer.reached():
                 itt.right_click()
@@ -223,25 +224,34 @@ class FishingTask(TaskTemplate):
 
             state = self.get_current_state()
             logger.debug(f"当前状态: {state}")
-            if state in [FishingState.NOT_FISHING, FishingState.FINISH]:
-                time.sleep(0.5)
-                continue
-            elif state == FishingState.STRIKE:
-                idle_timer.clear()
-                self.handle_strike()
-                continue
-            elif state == FishingState.PULL_LINE:
-                self.handle_pull_line()
-                continue
-            elif state == FishingState.REEL_IN:
-                self.handle_reel_in()
-                continue
-            elif state == FishingState.SKIP:
-                self.handle_skip()
-                break
-            elif state == FishingState.UNKNOWN:
-                self.handle_skip()
-                break
+            if state != FishingState.UNKNOWN:
+                unknown_state_count = 0
+                if state in [FishingState.NOT_FISHING, FishingState.FINISH]:
+                    time.sleep(0.5)
+                    continue
+                elif state == FishingState.STRIKE:
+                    idle_timer.clear()
+                    self.handle_strike()
+                    continue
+                elif state == FishingState.PULL_LINE:
+                    self.handle_pull_line()
+                    continue
+                elif state == FishingState.REEL_IN:
+                    self.handle_reel_in()
+                    continue
+                elif state == FishingState.SKIP:
+                    self.handle_skip()
+                    break
+            else:
+                # 有可能因为状态切换的中间帧，导致识别失败
+                # 所以连续3次判断为UNKNOWN，才认为是结束了
+                unknown_state_count += 1
+                logger.debug(f"连续{unknown_state_count}次识别为UNKNOWN")
+                if unknown_state_count > 2:
+                    self.handle_skip()
+                    break
+                else:
+                    time.sleep(0.05)
 
         return FishingResult.SUCCESS
 
