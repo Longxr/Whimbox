@@ -234,7 +234,7 @@ class ChatView(QWidget):
         shape_ok, width, height = HANDLE_OBJ.check_shape()
         logger.info(f"分辨率: {width}x{height}")
         if not shape_ok:
-            self.add_message("请先将游戏的分辨率设置为1920x1080或2560x1440或3840x2160", 'error')
+            self.add_message("请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440或3840x2160", 'error')
             return
 
         text = self.input_line_edit.text().strip()

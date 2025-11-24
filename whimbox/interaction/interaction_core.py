@@ -65,8 +65,6 @@ MapVirtualKeyW = ctypes.windll.user32.MapVirtualKeyW
 
 class InteractionBGD:
     """
-    default size:1920x1080
-    support size:1920x1080
     thanks for https://zhuanlan.zhihu.com/p/361569101
     """
 
