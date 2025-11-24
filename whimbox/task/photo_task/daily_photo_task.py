@@ -31,7 +31,7 @@ class DailyPhotoTask(TaskTemplate):
         ui_control.goto_page(page_main)
 
 if __name__ == "__main__":
-    # daily_photo_task = DailyPhotoTask()
-    # daily_photo_task.task_run()
-    # print(daily_photo_task.task_result)
-    ui_control.goto_page(page_photo)
+    daily_photo_task = DailyPhotoTask()
+    daily_photo_task.task_run()
+    print(daily_photo_task.task_result)
+    # ui_control.goto_page(page_photo)
