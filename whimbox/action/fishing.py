@@ -96,14 +96,15 @@ class FishingTask(TaskTemplate):
 
     def handle_reel_in(self):
         self.log_to_gui("状态: 收线")
-        while True:
-            if keybind.KEYBIND_FISHING_REEL_IN == "鼠标右键":
-                itt.right_click()
-            else:
-                itt.key_press(keybind.KEYBIND_FISHING_REEL_IN)
+        while not self.need_stop():
+            start_time = time.time()
+            itt.key_press(keybind.KEYBIND_FISHING_REEL_IN)
             if not itt.get_img_existence(IconFishingReelIn):
                 break
-            # time.sleep(0.1)
+            gap_time = time.time() - start_time
+            if gap_time < 0.2:
+                # 避免鼠标点击过快，导致吞鼠标事件
+                time.sleep(0.2 - gap_time)
 
     def handle_skip(self):
         self.log_to_gui("状态: 跳过")
@@ -188,7 +189,7 @@ class FishingTask(TaskTemplate):
         itt.delay(2, comment="等待弹出鱼钓光的提示框")
         if itt.get_img_existence(IconFishingNoFish):
             itt.right_click()
-            while not ui_control.verify_page(page_main):
+            while not ui_control.verify_page(page_main) and not self.need_stop():
                 time.sleep(0.5)
             return FishingResult.NO_FISH
         
