@@ -25,12 +25,6 @@ FUNCTION_BUTTONS = [
         'task_name': 'record_path',
         'task_params': {},
         'start_message': '开始录制路线，按 / 停止录制\n',
-    },
-    {
-        'label': '自动搓核弹',
-        'task_name': 'roll_dice_task',
-        'task_params': {},
-        'start_message': '开始搓核弹，按 / 手动停止\n随机任务如果满了需要去做，就手动停止，奇想盒默认会继续搓\n',
     }
 ]
 

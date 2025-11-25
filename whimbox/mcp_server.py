@@ -209,16 +209,6 @@ async def monthly_pass_task() -> dict:
     task_result = monthly_pass_task.task_run()
     return task_result.to_dict()
 
-
-@mcp.tool()
-async def roll_dice_task() -> dict:
-    """
-    扔骰子(搓核弹)
-    """
-    roll_dice_task = RollDiceTask()
-    task_result = roll_dice_task.task_run()
-    return task_result.to_dict()
-
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
     """
