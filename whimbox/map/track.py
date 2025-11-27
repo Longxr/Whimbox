@@ -152,7 +152,8 @@ class Track:
         lower = [0, 80, 200]
         upper = [30, 110, 255]
         px_count = count_px_with_hsv_limit(img, lower, upper)
-        if px_count > 100:
+        # print(f"px_count: {px_count}")
+        if px_count > 200:
             return True
         return False
 
@@ -168,5 +169,5 @@ if __name__ == "__main__":
     #     print(material_track.get_material_track_degree())
     #     time.sleep(0.2)
     while True:
-        material_track.is_ability_active()
+        material_track.get_material_track_degree()
         time.sleep(0.2)

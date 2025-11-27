@@ -78,7 +78,7 @@ class MaterialTrackBaseTask(TaskTemplate):
                         itt.right_up()
                         # self.pre_play_func()
                         skip_to_page_main()
-                        # time.sleep(0.8) # 等待采集结果文字出现
+                        time.sleep(0.5) # 等待采集结果文字出现
                         text = itt.ocr_single_line(AreaMaterialGetText)
                         print(text)
                         if self.material_name in text:
