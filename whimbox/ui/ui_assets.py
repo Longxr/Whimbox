@@ -33,6 +33,7 @@ AreaBigMapMaterialTrackConfirm = Area()
 # 大世界采集、跳跃、移动、跳过等相关的UI
 AreaFPickup = Area()
 TextFPickUp = Text("拾取", cap_area = AreaFPickup)
+IconPickupFeature = ImgIcon(print_log=LOG_NONE, threshold=0.75, gray_limit=(210, 255))
 IconSkip = ImgIcon(print_log=LOG_ALL, threshold=0.75, gray_limit=(210, 255)) 
 IconClickSkip = ImgIcon(print_log=LOG_ALL, threshold=0.80, gray_limit=(210, 255))
 IconSkipDialog = ImgIcon(print_log=LOG_NONE, threshold=0.75, gray_limit=(210, 255))

@@ -10,12 +10,14 @@ from whimbox.common.cvars import has_foreground_task
 from whimbox.common.utils.img_utils import crop
 from whimbox.task.task_template import STATE_TYPE_SUCCESS
 from whimbox.common.cvars import current_stop_flag
+from whimbox.common.keybind import keybind
 
 
 class BackgroundFeature(Enum):
     """后台功能枚举"""
     AUTO_FISHING = "auto_fishing"
     AUTO_DIALOGUE = "auto_dialogue"
+    AUTO_PICKUP = "auto_pickup"
 
 
 class BackgroundTaskManager:
@@ -44,6 +46,7 @@ class BackgroundTaskManager:
         self.enabled_features = {
             BackgroundFeature.AUTO_FISHING: False,
             BackgroundFeature.AUTO_DIALOGUE: False,
+            BackgroundFeature.AUTO_PICKUP: False,
         }
     
     def set_feature_enabled(self, feature: BackgroundFeature, enabled: bool):
@@ -101,7 +104,7 @@ class BackgroundTask:
     
     def __init__(self, manager: BackgroundTaskManager):
         self.manager = manager
-        self.check_interval = 1.0  # 画面检测间隔（秒）
+        self.check_interval = 0.3  # 画面检测间隔（秒）
         self.was_paused = False  # 上一次循环是否处于暂停状态
         self.stop_event = threading.Event()  # 停止事件
 
@@ -127,6 +130,7 @@ class BackgroundTask:
         """主循环 - 持续检测画面并触发对应功能"""
         try:            
             while not self.stop_event.is_set():
+                start_time = time.time()
                 # 检测是否有前台任务在运行
                 if has_foreground_task():
                     # 有前台任务在运行，暂停后台任务
@@ -156,10 +160,16 @@ class BackgroundTask:
                     if self.manager.is_feature_enabled(BackgroundFeature.AUTO_DIALOGUE):
                         if self._detect_dialogue_opportunity(cap):
                             self._execute_dialogue()
+
+                    # 检测采集状态
+                    if self.manager.is_feature_enabled(BackgroundFeature.AUTO_PICKUP):
+                        if self._detect_pickup_opportunity(cap):
+                            itt.key_press(keybind.KEYBIND_INTERACTION)
                             
                 except Exception as e:
                     logger.error(f"后台任务检测出错: {e}")
                 
+                logger.info(f"后台任务检测时间: {time.time() - start_time}")
                 # 等待一段时间再检测
                 time.sleep(self.check_interval)
         
@@ -203,6 +213,13 @@ class BackgroundTask:
         skip_dialog_task = SkipDialogTask()
         skip_dialog_task.task_run()
         # self.log_to_gui(f"自动对话结束", type="finalize_ai_message")
+
+    def _detect_pickup_opportunity(self, cap) -> bool:
+        """检测是否可以采集"""
+        cap = crop(cap, AreaFPickup.position)
+        if itt.get_img_existence(IconPickupFeature, cap=cap):
+            return True
+        return False
 
 
 if __name__ == "__main__":
