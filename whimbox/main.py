@@ -30,7 +30,6 @@ def run_app():
     if not os.path.exists(SCRIPT_PATH):
         os.makedirs(SCRIPT_PATH, exist_ok=True)
 
-    from whimbox.ingame_ui.ingame_ui import run_ingame_ui
     from whimbox.mcp_server import start_mcp_server
     from whimbox.mcp_agent import mcp_agent
     import asyncio
@@ -49,6 +48,7 @@ def run_app():
         HANDLE_OBJ.refresh_handle()
     logger.info("GAME_STARTED")
 
+    from whimbox.ingame_ui.ingame_ui import run_ingame_ui
     run_ingame_ui()
 
 def main():

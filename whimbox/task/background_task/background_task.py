@@ -20,6 +20,33 @@ class BackgroundFeature(Enum):
     AUTO_PICKUP = "auto_pickup"
 
 
+class FeatureConfig:
+    """功能配置"""
+    def __init__(self, enabled: bool = False, interval: int = 1):
+        """
+        Args:
+            enabled: 是否启用
+            interval: 执行间隔(轮数),每N轮执行一次
+        """
+        self.enabled = enabled
+        self.interval = interval
+        self.counter = 0  # 当前计数器
+    
+    def should_execute(self) -> bool:
+        """判断是否应该执行"""
+        if not self.enabled:
+            return False
+        self.counter += 1
+        if self.counter >= self.interval:
+            self.counter = 0
+            return True
+        return False
+    
+    def reset_counter(self):
+        """重置计数器"""
+        self.counter = 0
+
+
 class BackgroundTaskManager:
     """后台任务管理器 - 单例模式"""
     _instance = None
@@ -42,22 +69,72 @@ class BackgroundTaskManager:
         self.background_task = None
         self.background_thread = None
         
-        # 功能开关（默认全部关闭）
-        self.enabled_features = {
-            BackgroundFeature.AUTO_FISHING: False,
-            BackgroundFeature.AUTO_DIALOGUE: False,
-            BackgroundFeature.AUTO_PICKUP: False,
+        # 功能配置（默认全部关闭，设置不同的执行间隔）
+        self.feature_configs = {
+            BackgroundFeature.AUTO_FISHING: FeatureConfig(enabled=False, interval=5),
+            BackgroundFeature.AUTO_DIALOGUE: FeatureConfig(enabled=False, interval=5),
+            BackgroundFeature.AUTO_PICKUP: FeatureConfig(enabled=False, interval=1),
         }
+        
+        # 从配置文件加载状态（但不自动启动任务）
+        self._load_from_config()
     
     def set_feature_enabled(self, feature: BackgroundFeature, enabled: bool):
-        """设置功能开关"""
+        """设置功能开关
+        
+        Args:
+            feature: 功能类型
+            enabled: 是否启用
+        """
         with self._lock:
-            self.enabled_features[feature] = enabled
-            logger.info(f"后台功能 {feature.value} {'启用' if enabled else '禁用'}")
+            if feature in self.feature_configs:
+                self.feature_configs[feature].enabled = enabled
+                self.feature_configs[feature].reset_counter()
+                logger.info(f"后台功能 {feature.value} {'启用' if enabled else '禁用'}")
+                # 保存到配置文件
+                self._save_to_config(feature, enabled)
     
     def is_feature_enabled(self, feature: BackgroundFeature) -> bool:
         """检查功能是否启用"""
-        return self.enabled_features.get(feature, False)
+        config = self.feature_configs.get(feature)
+        return config.enabled if config else False
+    
+    def get_feature_config(self, feature: BackgroundFeature) -> FeatureConfig:
+        """获取功能配置"""
+        return self.feature_configs.get(feature)
+    
+    def _load_from_config(self):
+        """从配置文件加载状态"""
+        try:
+            from whimbox.config.config import global_config
+            
+            # 加载各个功能的启用状态
+            auto_fishing = global_config.get_bool("BackgroundTask", "auto_fishing", False)
+            auto_dialogue = global_config.get_bool("BackgroundTask", "auto_dialogue", False)
+            auto_pickup = global_config.get_bool("BackgroundTask", "auto_pickup", False)
+            
+            # 设置状态（不保存到配置文件，避免递归）
+            self.feature_configs[BackgroundFeature.AUTO_FISHING].enabled = auto_fishing
+            self.feature_configs[BackgroundFeature.AUTO_DIALOGUE].enabled = auto_dialogue
+            self.feature_configs[BackgroundFeature.AUTO_PICKUP].enabled = auto_pickup
+            
+            logger.info(f"从配置文件加载后台任务状态: 钓鱼={auto_fishing}, 对话={auto_dialogue}, 采集={auto_pickup}")
+        except Exception as e:
+            logger.warning(f"加载后台任务配置失败: {e}")
+    
+    def _save_to_config(self, feature: BackgroundFeature, enabled: bool):
+        """保存单个功能状态到配置文件"""
+        try:
+            from whimbox.config.config import global_config
+            
+            # 将枚举值转换为配置键名
+            config_key = feature.value  # auto_fishing, auto_dialogue, auto_pickup
+            
+            global_config.set("BackgroundTask", config_key, str(enabled).lower())
+            global_config.save()
+            logger.debug(f"已保存后台任务配置: {config_key}={enabled}")
+        except Exception as e:
+            logger.error(f"保存后台任务配置失败: {e}")
     
     def start_background_task(self):
         """启动后台任务"""
@@ -104,7 +181,7 @@ class BackgroundTask:
     
     def __init__(self, manager: BackgroundTaskManager):
         self.manager = manager
-        self.check_interval = 0.3  # 画面检测间隔（秒）
+        self.check_interval = 0.1  # 画面检测间隔（秒）
         self.was_paused = False  # 上一次循环是否处于暂停状态
         self.stop_event = threading.Event()  # 停止事件
 
@@ -130,7 +207,6 @@ class BackgroundTask:
         """主循环 - 持续检测画面并触发对应功能"""
         try:            
             while not self.stop_event.is_set():
-                start_time = time.time()
                 # 检测是否有前台任务在运行
                 if has_foreground_task():
                     # 有前台任务在运行，暂停后台任务
@@ -151,25 +227,27 @@ class BackgroundTask:
                 try:
                     cap = itt.capture()
                     
-                    # 检测钓鱼状态
-                    if self.manager.is_feature_enabled(BackgroundFeature.AUTO_FISHING):
+                    # 检测钓鱼状态 - 根据间隔执行
+                    fishing_config = self.manager.get_feature_config(BackgroundFeature.AUTO_FISHING)
+                    if fishing_config and fishing_config.should_execute():
                         if self._detect_fishing_opportunity(cap):
                             self._execute_fishing()            
                     
-                    # 检测对话状态
-                    if self.manager.is_feature_enabled(BackgroundFeature.AUTO_DIALOGUE):
+                    # 检测对话状态 - 根据间隔执行
+                    dialogue_config = self.manager.get_feature_config(BackgroundFeature.AUTO_DIALOGUE)
+                    if dialogue_config and dialogue_config.should_execute():
                         if self._detect_dialogue_opportunity(cap):
                             self._execute_dialogue()
 
-                    # 检测采集状态
-                    if self.manager.is_feature_enabled(BackgroundFeature.AUTO_PICKUP):
+                    # 检测采集状态 - 根据间隔执行
+                    pickup_config = self.manager.get_feature_config(BackgroundFeature.AUTO_PICKUP)
+                    if pickup_config and pickup_config.should_execute():
                         if self._detect_pickup_opportunity(cap):
                             itt.key_press(keybind.KEYBIND_INTERACTION)
                             
                 except Exception as e:
                     logger.error(f"后台任务检测出错: {e}")
                 
-                logger.info(f"后台任务检测时间: {time.time() - start_time}")
                 # 等待一段时间再检测
                 time.sleep(self.check_interval)
         

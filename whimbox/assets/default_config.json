@@ -13,6 +13,20 @@
             "description": "OCR引擎，可选：rapid"
         }
     },
+    "BackgroundTask": {
+        "auto_fishing": {
+            "value": "false",
+            "description": "是否启用自动钓鱼"
+        },
+        "auto_dialogue": {
+            "value": "false",
+            "description": "是否启用自动对话"
+        },
+        "auto_pickup": {
+            "value": "false",
+            "description": "是否启用自动采集"
+        }
+    },
     "Agent": {
         "model":{
             "value": "Qwen/Qwen3-30B-A3B-Instruct-2507",

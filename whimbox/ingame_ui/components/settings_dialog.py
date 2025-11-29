@@ -119,7 +119,7 @@ class SettingsDialog(QDialog):
         
         # 为每个配置节创建分组
         for section_name, section_data in DEFAULT_CONFIG.items():
-            if section_name == "General":
+            if section_name in ["General", "BackgroundTask"]:
                 continue
             group_box = self.create_section_group(section_name, section_data)
             config_layout.addWidget(group_box)
@@ -206,6 +206,8 @@ class SettingsDialog(QDialog):
             cn_name = "游戏"
         elif section_name == "Keybinds":
             cn_name = "改键（如果修改了游戏里的键位设置，请在这里同步修改）"
+        elif section_name == "BackgroundTask":
+            cn_name = "自动小工具"
         else:
             cn_name = section_name
         group_box = QGroupBox(cn_name)

@@ -46,6 +46,9 @@ class FunctionView(QWidget):
         
         # 初始化UI
         self.init_ui()
+        
+        # 从配置文件加载后台任务状态
+        self._load_background_task_state()
     
     def init_ui(self):
         """初始化功能视图UI"""
@@ -216,30 +219,39 @@ class FunctionView(QWidget):
         return checkbox
     
     def on_background_feature_changed(self, feature: BackgroundFeature, enabled: bool):
-        """后台功能复选框改变"""
-        background_manager.set_feature_enabled(feature, enabled)
-        logger.info(f"后台功能 {feature.value} {'启用' if enabled else '禁用'}")
-        
-        # 检查是否有任何功能被启用
-        self._update_background_task_state()
-    
-    def _update_background_task_state(self):
-        """根据复选框状态自动启动或停止后台任务"""
-        # 检查是否有任何功能被启用
-        any_enabled = any(checkbox.isChecked() for checkbox in self.background_checkboxes.values())
-        
-        if any_enabled:
-            # 有功能被启用，启动后台任务
-            if not background_manager.is_running():
-                if background_manager.start_background_task():
-                    self._update_status_label(True)
-                    logger.info("后台任务已自动启动")
-        else:
-            # 没有功能被启用，停止后台任务
-            if background_manager.is_running():
+        """后台功能复选框改变 - 直接调用 background_manager"""
+        try:
+            logger.info(f"设置后台功能: {feature.value} = {enabled}")
+            
+            # 直接调用 background_manager 设置功能
+            background_manager.set_feature_enabled(feature, enabled)
+            
+            # 检查是否需要启动或停止后台任务
+            any_enabled = any(
+                background_manager.is_feature_enabled(f) 
+                for f in BackgroundFeature
+            )
+            
+            if any_enabled and not background_manager.is_running():
+                # 有功能启用但任务未运行，启动任务
+                background_manager.start_background_task()
+            elif not any_enabled and background_manager.is_running():
+                # 没有功能启用但任务在运行，停止任务
                 background_manager.stop_background_task()
-                self._update_status_label(False)
-                logger.info("后台任务已自动停止")
+            
+            # 更新状态标签
+            is_running = background_manager.is_running()
+            self._update_status_label(is_running)
+            
+            logger.info(f"后台功能设置成功: {feature.value} = {enabled}")
+            
+        except Exception as e:
+            # 设置失败，恢复复选框状态
+            logger.error(f"后台功能设置失败: {e}")
+            checkbox = self.background_checkboxes[feature]
+            checkbox.blockSignals(True)
+            checkbox.setChecked(not enabled)
+            checkbox.blockSignals(False)
     
     def _update_status_label(self, running: bool):
         """更新状态标签"""
@@ -266,4 +278,31 @@ class FunctionView(QWidget):
         """设置所有按钮是否可用"""
         for button in self.buttons:
             button.setEnabled(enabled)
+    
+    def _load_background_task_state(self):
+        """直接从 background_manager 加载后台任务状态"""
+        try:
+            # 阻止信号触发，避免触发状态修改
+            for checkbox in self.background_checkboxes.values():
+                checkbox.blockSignals(True)
+            
+            # 直接从 background_manager 读取状态
+            for feature, checkbox in self.background_checkboxes.items():
+                enabled = background_manager.is_feature_enabled(feature)
+                checkbox.setChecked(enabled)
+                logger.info(f"加载后台任务状态: {feature.value}={enabled}")
+            
+            # 恢复信号
+            for checkbox in self.background_checkboxes.values():
+                checkbox.blockSignals(False)
+            
+            # 更新状态标签
+            is_running = background_manager.is_running()
+            self._update_status_label(is_running)
+            
+            if is_running:
+                logger.info("后台任务已在运行")
+                
+        except Exception as e:
+            logger.error(f"加载后台任务状态失败: {e}")
 

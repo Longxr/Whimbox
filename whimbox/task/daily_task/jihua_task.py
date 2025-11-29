@@ -40,6 +40,7 @@ class JihuaTask(TaskTemplate):
     @register_step("正在前往激化台")
     def step3(self):
         # 等待loading结束
+        itt.delay(1, comment="等待一会，保证进入loading界面，避免直接跳过下面loading界面的检测")
         itt.wait_until_stable(threshold=0.95, timeout=2)
         ui_control.ui_additional()
         if not wait_until_appear(IconPageMainFeature):
