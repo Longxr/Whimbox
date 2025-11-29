@@ -18,6 +18,7 @@ class BackgroundFeature(Enum):
     AUTO_FISHING = "auto_fishing"
     AUTO_DIALOGUE = "auto_dialogue"
     AUTO_PICKUP = "auto_pickup"
+    AUTO_CLEAR = "auto_clear"
 
 
 class FeatureConfig:
@@ -74,6 +75,7 @@ class BackgroundTaskManager:
             BackgroundFeature.AUTO_FISHING: FeatureConfig(enabled=False, interval=5),
             BackgroundFeature.AUTO_DIALOGUE: FeatureConfig(enabled=False, interval=5),
             BackgroundFeature.AUTO_PICKUP: FeatureConfig(enabled=False, interval=1),
+            BackgroundFeature.AUTO_CLEAR: FeatureConfig(enabled=False, interval=3),
         }
         
         # 从配置文件加载状态（但不自动启动任务）
@@ -112,13 +114,15 @@ class BackgroundTaskManager:
             auto_fishing = global_config.get_bool("BackgroundTask", "auto_fishing", False)
             auto_dialogue = global_config.get_bool("BackgroundTask", "auto_dialogue", False)
             auto_pickup = global_config.get_bool("BackgroundTask", "auto_pickup", False)
+            auto_clear = global_config.get_bool("BackgroundTask", "auto_clear", False)
             
             # 设置状态（不保存到配置文件，避免递归）
             self.feature_configs[BackgroundFeature.AUTO_FISHING].enabled = auto_fishing
             self.feature_configs[BackgroundFeature.AUTO_DIALOGUE].enabled = auto_dialogue
             self.feature_configs[BackgroundFeature.AUTO_PICKUP].enabled = auto_pickup
+            self.feature_configs[BackgroundFeature.AUTO_CLEAR].enabled = auto_clear
             
-            logger.info(f"从配置文件加载后台任务状态: 钓鱼={auto_fishing}, 对话={auto_dialogue}, 采集={auto_pickup}")
+            logger.info(f"从配置文件加载后台任务状态: 钓鱼={auto_fishing}, 对话={auto_dialogue}, 采集={auto_pickup}, 清洁={auto_clear}")
         except Exception as e:
             logger.warning(f"加载后台任务配置失败: {e}")
     
@@ -244,6 +248,12 @@ class BackgroundTask:
                     if pickup_config and pickup_config.should_execute():
                         if self._detect_pickup_opportunity(cap):
                             itt.key_press(keybind.KEYBIND_INTERACTION)
+                    
+                    # 检测清洁跳过状态
+                    clear_config = self.manager.get_feature_config(BackgroundFeature.AUTO_CLEAR)
+                    if clear_config and clear_config.should_execute():
+                        if self._detect_clear_opportunity(cap):
+                            itt.key_press(keybind.KEYBIND_INTERACTION)
                             
                 except Exception as e:
                     logger.error(f"后台任务检测出错: {e}")
@@ -296,6 +306,13 @@ class BackgroundTask:
         """检测是否可以采集"""
         cap = crop(cap, AreaFPickup.position)
         if itt.get_img_existence(IconPickupFeature, cap=cap):
+            return True
+        return False
+
+    def _detect_clear_opportunity(self, cap) -> bool:
+        """检测是否可以清洁跳过"""
+        cap = crop(cap, IconSkip.cap_posi)
+        if itt.get_img_existence(IconSkip, cap=cap):
             return True
         return False
 

@@ -176,6 +176,7 @@ class FunctionView(QWidget):
             (BackgroundFeature.AUTO_FISHING, "自动钓鱼"),
             (BackgroundFeature.AUTO_DIALOGUE, "自动对话"),
             (BackgroundFeature.AUTO_PICKUP, "自动采集"),
+            (BackgroundFeature.AUTO_CLEAR, "自动清洁跳过"),
         ]
         
         # 创建网格布局，每行2个
