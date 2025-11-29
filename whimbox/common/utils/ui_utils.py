@@ -164,6 +164,21 @@ def scroll_find_click(area: Area, target, threshold=0, hsv_limit=None, scale=0, 
     else:
         return False
 
+
+def scroll_to_top(area: Area):
+    # 鼠标移到area的右下角
+    scroll_posi = (area.position[2], area.position[3])
+    itt.move_to(scroll_posi)
+    last_cap = itt.capture(posi=area.position)
+    while True:
+        itt.middle_scroll(15)
+        time.sleep(0.2)
+        new_cap = itt.capture(posi=area.position)
+        rate = similar_img(last_cap, new_cap)
+        if rate > 0.99:
+            break
+        last_cap = new_cap
+
     
 def wait_until_appear_then_click(obj, retry_time=3):
     while retry_time > 0:

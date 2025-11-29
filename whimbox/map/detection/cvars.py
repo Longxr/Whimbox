@@ -1,22 +1,29 @@
-PROVINCE_NAMES = [
-    "心愿原野",
-    "星海",
-    "家园",
-]
+# PROVINCE_NAMES = [
+#     "心愿原野",
+#     "星海",
+#     "家园",
+# ]
 
+MAP_NAME_UNSUPPORTED = "unsupported"
 MAP_NAME_MIRALAND = "miraland"
 MAP_NAME_STARSEA = "starsea"
+# MAP_NAME_WISHFIELD = "wishfield"
+# MAP_NAME_ITZALAN = "itzalan"
+# MAP_NAME_FIREWORK = "firework"  # 花焰群岛
+# MAP_NAME_SERNITY = "sernity"    # 无忧岛
+# MAP_NAME_DANQING_OUTSIDE = "danqing_outside"    # 丹青屿
+# MAP_NAME_DANQING_INSIDE = "danqing_inside"      # 丹青之境
 MAP_NAME_HOME = "home"
 
 REGION_NAME_TO_MAP_NAME_DICT = {
+    MAP_NAME_MIRALAND: ["纪念山地", "花愿镇", "微风绿野", "小石树田村", "石树田无人区", "祈愿树林", "巨木之森", "伊地峡谷"],
     MAP_NAME_STARSEA: ["星海"],
-    MAP_NAME_MIRALAND: ["纪念山地", "花愿镇", "微风绿野", "小石树田村", "石树田无人区", "祈愿树林"]
 }
 
-GAMELOC_TO_PNGMAP_SCALE = 0.02222
+GAMELOC_TO_PNGMAP_SCALE = 2/90
 GAMELOC_TO_PNGMAP_OFFSET_DICT = {
-    MAP_NAME_MIRALAND: (6718, 5587),
-    MAP_NAME_STARSEA: (2447, 1046),
+    MAP_NAME_MIRALAND: (16799, 8722),
+    MAP_NAME_STARSEA: (2448, 1051),
 }
 
 # 预计最大移动速度

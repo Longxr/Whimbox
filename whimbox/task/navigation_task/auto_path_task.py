@@ -13,6 +13,7 @@ from whimbox.action.catch_insect import CatchInsectTask
 from whimbox.action.clean_animal import CleanAnimalTask
 from whimbox.action.fishing import FishingTask
 from whimbox.task.navigation_task.common import path_manager
+from whimbox.map.convert import convert_GameLoc_to_PngMapPx
 
 
 class AutoPathTask(TaskTemplate):
@@ -31,6 +32,14 @@ class AutoPathTask(TaskTemplate):
             self.path_points = path_record.points
         else:
             raise ValueError("path_record和path_name不能同时为空")
+        
+        if self.path_info.version != "2.0":
+            raise Exception("路线版本不匹配，请更新该脚本或前往路线编辑网站重新导出新版本的路线")
+        # 路线脚本中的坐标为游戏原生坐标，whimbox使用时需要转换为图片像素坐标
+        for point in self.path_points:
+            pngmap_position = convert_GameLoc_to_PngMapPx(point.position, self.path_info.map)
+            point.position = [pngmap_position[0], pngmap_position[1]]
+        
         # 各种状态记录
         self.last_position = None
         self.curr_position = None
@@ -125,8 +134,6 @@ class AutoPathTask(TaskTemplate):
         # 初始化地图信息
         nikki_map.reinit_smallmap()
         self.curr_position = nikki_map.get_position(use_cache=True)
-        # 校准视角旋转比例
-        calibrate_view_rotation_ratio()
         # 初始化能力盘
         ability_manager.reinit()
 
@@ -231,6 +238,8 @@ class AutoPathTask(TaskTemplate):
                 self.change_to_walk()
                 nikki_map.bigmap_tp(self.target_point.position, self.path_info.map)
                 self.curr_position = nikki_map.get_position()
+                # 校准视角旋转比例
+                calibrate_view_rotation_ratio()
         return is_end
 
 
@@ -297,6 +306,6 @@ class AutoPathTask(TaskTemplate):
 
 
 if __name__ == "__main__":
-    task = AutoPathTask(path_name="example5_钓鱼测试")
+    task = AutoPathTask(path_name="example3_星海测试")
     task_result = task.task_run()
     print(task_result.to_dict())

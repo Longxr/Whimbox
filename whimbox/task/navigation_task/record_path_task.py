@@ -15,12 +15,13 @@ from whimbox.task.navigation_task.common import *
 from whimbox.view_and_move.move import *
 from whimbox.view_and_move.view import *
 from whimbox.common.utils.utils import save_json
+from whimbox.map.convert import convert_PngMapPx_to_GameLoc
 
 
 class RecordPathTask(TaskTemplate):
     def __init__(self):
         super().__init__("record_path_task")
-        self.step_sleep = 0.05
+        self.step_sleep = 0.1
         self.min_gap = 2    # 路径点最小间隔距离
         self._lock = Lock()
         # self.last_direction = 0
@@ -64,14 +65,17 @@ class RecordPathTask(TaskTemplate):
 
     @register_step("准备中，请稍等")
     def step1(self):
-        nikki_map.reinit_smallmap()
+        if not nikki_map.reinit_smallmap():
+            self.task_stop(message="暂不支持在该区域录制")
+            return
+        ui_control.goto_page(page_main)
         current_posi = nikki_map.get_position()
         closest_teleporter = nikki_map.find_closest_teleporter(current_posi, nikki_map.map_name)
         distance = euclidean_distance(current_posi, closest_teleporter.position)
         if distance < not_teleport_offset:
             self._add_point(current_posi, POINT_TYPE_TARGET, MOVE_MODE_WALK, ACTION_TELEPORT)
         else:
-            self.task_stop(message="起点与最近的传送点太远了，不予记录")
+            self.task_stop(message="起点与最近的传送点太远了，请重新录制")
 
 
     @register_step("开始录制，按“分号”记录特殊点位")
@@ -98,6 +102,7 @@ class RecordPathTask(TaskTemplate):
 
 
     def save_path(self):
+        self.log_to_gui(f"保存路线中，请稍等。。。")
         end_position = nikki_map.get_position()
         self._add_point(end_position, POINT_TYPE_TARGET)
 
@@ -110,6 +115,10 @@ class RecordPathTask(TaskTemplate):
         name = f"我的路线_{date_str}"
         json_name = f"{name}.json"
         region_name, map_name = nikki_map.update_region_and_map_name(use_cache=True)
+        # 将坐标转换为游戏原生坐标，便于永久保存
+        for pp in self.path_point_list:
+            position = convert_PngMapPx_to_GameLoc(pp.position, map_name, decimal=2)
+            pp.position = [position[0], position[1]]
         path_record = PathRecord(
             info=PathInfo(
                 name=name, 
@@ -118,6 +127,7 @@ class RecordPathTask(TaskTemplate):
                 region=region_name,
                 map=map_name,
                 update_time=time.strftime("%Y-%m-%d %H:%M:%S", now),
+                version="2.0"
             ),
             points=self.path_point_list
         )

@@ -117,16 +117,17 @@ class Map(MiniMap, BigMap):
     def reinit_smallmap(self) -> None:
         ui_control.goto_page(page_bigmap)
         self.update_region_and_map_name()
-        # 如果在未支持的地图，就先传送到花愿镇
-        if self.map_name not in REGION_NAME_TO_MAP_NAME_DICT:
-            self.bigmap_tp([6425.3,4381.0], MAP_NAME_MIRALAND)
+        if self.map_name == MAP_NAME_UNSUPPORTED:
+            self.init_position((0, 0))
+            return False
         else:
             posi = self.get_bigmap_posi()
             self.init_position(tuple(map(int, list(posi))))
-        ui_control.goto_page(page_main)
+        # ui_control.goto_page(page_main)
         self.small_map_init_flag = True
         self.last_valid_position = self.position
         self.smallmap_upd_timer.reset()
+        return True
 
     def get_smallmap_from_teleporter(self, area=None):
         if area == None:
@@ -162,9 +163,6 @@ class Map(MiniMap, BigMap):
         return [i['tper'] for i in tpers_dict], [i['d'] for i in tpers_dict]
         # self.init_position(tuple(list(map(int,max_position))))
         # logger.info(f"init_smallmap_from_teleporter:{max_n} {max_position} {max_tper.name}")
-
-    def while_until_no_excessive_error(self) -> None:
-        self.reinit_smallmap()
 
     def get_direction(self) -> float:
         self.update_direction(itt.capture())
@@ -274,12 +272,11 @@ class Map(MiniMap, BigMap):
         min_dist = 99999
         min_teleporter = None
         for checkpoint in DICT_TELEPORTER[map_name]:
-            if checkpoint.province in PROVINCE_NAMES:
-                cp_posi = checkpoint.position
-                dist = euclidean_distance(posi, cp_posi)
-                if dist < min_dist:
-                    min_teleporter = checkpoint
-                    min_dist = dist
+            cp_posi = checkpoint.position
+            dist = euclidean_distance(posi, cp_posi)
+            if dist < min_dist:
+                min_teleporter = checkpoint
+                min_dist = dist
         return min_teleporter
 
     def _switch_to_area(self, tp_province, tp_region):
@@ -290,6 +287,13 @@ class Map(MiniMap, BigMap):
             center = (center[0] + offset[0], center[1] + offset[1])
             itt.move_and_click(center)
 
+        def expand_province_dropdown(tp_province, first_region, text_box_dict):
+            # 如果识别出“纪念山地”，说明心愿原野下拉框已展开
+            if not first_region in text_box_dict:
+                box = text_box_dict[tp_province]
+                click_box(box, AreaBigMapRegionSelect)
+                time.sleep(0.5)
+
         # 判断当前区域是否是目标区域
         current_region, _ = self.update_region_and_map_name()
         if current_region != tp_region:
@@ -297,23 +301,29 @@ class Map(MiniMap, BigMap):
             itt.move_and_click(AreaBigMapRegionName.center_position())
             time.sleep(0.5)
             text_box_dict = itt.ocr_and_detect_posi(AreaBigMapRegionSelect)
-            if tp_province == "星海":
-                box = text_box_dict["星海"]
-                click_box(box, AreaBigMapRegionSelect)
+            if tp_province not in text_box_dict or tp_province == "星海":
+                # 如果目标province不在当前页面，说明当前province不是目标，就滑动并点击展开
+                scroll_to_top(AreaBigMapRegionSelect)
+                if not scroll_find_click(AreaBigMapRegionSelect, tp_province):
+                    return False
                 itt.wait_until_stable()
+            else:
+                # 如果目标province在当前页面，需要判断是否已经展开
+                if tp_province == "心愿原野":
+                    expand_province_dropdown(tp_province, "纪念山地", text_box_dict)
+                elif tp_province == "伊赞之土":
+                    expand_province_dropdown(tp_province, "巨木之森", text_box_dict)
+
+            if tp_province == "星海":
                 self.update_region_and_map_name()
                 return True
-            elif tp_province == "心愿原野":
-                # 如果识别出“纪念山地”，说明心愿原野下拉框已展开
-                if not "纪念山地" in text_box_dict:
-                    box = text_box_dict["心愿原野"]
-                    click_box(box, AreaBigMapRegionSelect)
-                    time.sleep(0.5)
+            else:
                 if scroll_find_click(AreaBigMapRegionSelect, tp_region):
                     itt.wait_until_stable()
                     self.update_region_and_map_name()
                     return True
-            return False
+                else:
+                    return False
         else:
             return True
 
@@ -342,13 +352,23 @@ class Map(MiniMap, BigMap):
         click_posi = self._move_bigmap(tp_posi)
         itt.move_and_click(click_posi)
         itt.wait_until_stable()
-        if not itt.appear_then_click(ButtonBigMapTeleport):
+        button_text = itt.ocr_single_line(AreaBigMapTeleportButton)
+        if button_text == "传送":
+            itt.move_and_click(AreaBigMapTeleportButton.center_position())
+        elif button_text == "追踪":
+            raise BigMapTPError("流转之柱未解锁")
+        else:
             # 传送点和其他图标重合的情况下，如果点击传送点，会弹出选择菜单
             hsv_lower = [0, 0, 220]
             hsv_upper = [180, 15, 255]   # hsv阈值处理，排除地图背景图案和文字的干扰
             if scroll_find_click(AreaBigMapTeleporterSelect, target_teleporter.name, hsv_limit=(hsv_lower, hsv_upper)):
                 itt.wait_until_stable()
-                if not itt.appear_then_click(ButtonBigMapTeleport):
+                button_text = itt.ocr_single_line(AreaBigMapTeleportButton)
+                if button_text == "传送":
+                    itt.move_and_click(AreaBigMapTeleportButton.center_position())
+                elif button_text == "追踪":
+                    raise BigMapTPError("流转之柱未解锁")
+                else:
                     raise BigMapTPError("大地图传送失败")
             else:
                 raise BigMapTPError("大地图传送失败")
@@ -357,26 +377,21 @@ class Map(MiniMap, BigMap):
         stop_flag = get_current_stop_flag()
         while not (ui_control.verify_page(page_main)) and not stop_flag.is_set():
             time.sleep(0.5)
-        itt.wait_until_stable(threshold=0.9)
-
+        # itt.wait_until_stable(threshold=0.9)
         self.init_position(tp_posi) 
-
         return tp_posi
 
 nikki_map = Map()
 logger.info(f"nikki map object created")
 
 if __name__ == '__main__':
-    # 花愿镇
-    # nikki_map.bigmap_tp([ 6425.3,4381.0], MAP_NAME_MIRALAND)
-    # 传送到星海无界枢纽
-    # nikki_map.bigmap_tp([1696, 2029], MAP_NAME_STARSEA)
-    # 传送到星海海滩
-    # nikki_map.bigmap_tp([3341, 2352], MAP_NAME_STARSEA)
-
-    # res = itt.ocr_and_detect_posi(AreaBigMapRegionSelect)
-    # print(res)
-    
-    # CV_DEBUG_MODE = True
-    # nikki_map.bigmap_tp([6188, 5446.5], MAP_NAME_MIRALAND)
-    nikki_map.bigmap_tp([8573.2, 3639.8], MAP_NAME_MIRALAND)
+    # 传送到菇菇聚落
+    # position = convert_GameLoc_to_PngMapPx([-495722.4375, -185020.03125], MAP_NAME_MIRALAND)
+    # position = convert_GameLoc_to_PngMapPx([-523254.75,-156153.0], MAP_NAME_MIRALAND)
+    # nikki_map.bigmap_tp(position, MAP_NAME_MIRALAND)
+    # 传送到星海
+    position = convert_GameLoc_to_PngMapPx([28715.5390625, 54790.9140625], MAP_NAME_STARSEA)
+    nikki_map.bigmap_tp(position, MAP_NAME_STARSEA)
+    # 传送到心愿原野
+    # position = convert_GameLoc_to_PngMapPx([-13172.34765625, -54273.6171875], MAP_NAME_MIRALAND)
+    # nikki_map.bigmap_tp(position, MAP_NAME_MIRALAND)

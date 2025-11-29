@@ -148,19 +148,8 @@ class AbilityManager:
             target_ability_icon_center = ability_icon_centers[ability_index]
         itt.move_and_click(target_ability_icon_center)
         time.sleep(0.2)
-        itt.move_to(AreaAbilityChange.center_position())
         # 一直向上滚到头，直到画面不再变化
-        last_cap = itt.capture(posi=AreaAbilityChange.position)
-        while True:
-            itt.middle_scroll(15)
-            time.sleep(0.2)
-            new_cap = itt.capture(posi=AreaAbilityChange.position)
-            rate = similar_img(last_cap, new_cap)
-            # logger.debug(f'rate: {rate}')
-            if rate > 0.99:
-                break
-            last_cap = new_cap
-        
+        scroll_to_top(AreaAbilityChange)
         # 向下滚动，寻找指定的ability_name
         res = scroll_find_click(AreaAbilityChange, ability_name, click_offset=(80, 80))
         if res:

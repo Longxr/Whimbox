@@ -4,6 +4,7 @@ from whimbox.map.detection.utils import *
 from whimbox.common.utils.img_utils import *
 from whimbox.map.detection.cvars import *
 
+
 def gen_luma_05x_0125x_map(org_map: MapAsset):
     '''
     生成luma_05x和luma_0125x的地图图片
@@ -59,13 +60,14 @@ def gen_ArrowRotateMapAll(arrow: MapAsset, arrows_map):
 
 
 if __name__ == '__main__':
-    # MiralandMapOrg = MapAsset('w01_v8')
-    # gen_luma_05x_0125x_map(MiralandMapOrg)
+    Image.MAX_IMAGE_PIXELS = None
+    MiralandMapOrg = MapAsset('w01_v10')
+    gen_luma_05x_0125x_map(MiralandMapOrg)
 
     # ARROW = MapAsset('ARROW')
     # arrows_map = gen_arrows_map(ARROW)
     # gen_ArrowRotateMap(ARROW, arrows_map)
     # gen_ArrowRotateMapAll(ARROW, arrows_map)
 
-    StartSeaMapOrg = MapAsset('w14000000_v2')
-    gen_luma_05x_0125x_map(StartSeaMapOrg)
+    # StartSeaMapOrg = MapAsset('w14000000_v2')
+    # gen_luma_05x_0125x_map(StartSeaMapOrg)

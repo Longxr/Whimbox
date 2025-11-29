@@ -20,6 +20,7 @@ class PathInfo(BaseModel):
     region: Optional[str] = None
     map: Optional[str] = None
     update_time: Optional[str] = None
+    version: Optional[str] = None
     default: Optional[bool] = None # 是否默认订阅
 
 class PathPoint(BaseModel):

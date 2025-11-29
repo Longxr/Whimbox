@@ -108,6 +108,10 @@ class MiniMap:
         - position_similarity
         - position
         """
+        if self.map_name == MAP_NAME_UNSUPPORTED:
+            self.position = (0, 0)
+            return self.position
+            
         image = self._get_minimap(origin_image, MINIMAP_POSITION_RADIUS)
         image = rgb2luma(image)
 
