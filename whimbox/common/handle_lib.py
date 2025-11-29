@@ -53,7 +53,7 @@ class handle_obj():
         if self.handle:
             _, _, width, height = win32gui.GetClientRect(self.handle)
             if width/height == 1920/1080:
-                if height < 1080:
+                if height < 1080 or height > 1440:
                     return False, width, height
                 else:
                     return True, width, height
