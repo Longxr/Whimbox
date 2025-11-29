@@ -1,7 +1,7 @@
 """自动跑图"""
 from whimbox.task.task_template import TaskTemplate, register_step, STATE_TYPE_STOP
 from whimbox.interaction.interaction_core import itt
-import time, os
+import time, copy
 from whimbox.common.path_lib import *
 from whimbox.task.navigation_task.common import *
 from whimbox.map.map import nikki_map
@@ -23,18 +23,16 @@ class AutoPathTask(TaskTemplate):
         self.step_sleep = 0.01
         if path_record is not None:
             self.path_info = path_record.info
-            self.path_points = path_record.points
+            self.path_points = copy.deepcopy(path_record.points)
         elif path_name is not None:
             path_record = path_manager.query_path(path_name=path_name)
             if path_record is None:
                 raise ValueError(f"路线{path_name}不存在")
             self.path_info = path_record.info
-            self.path_points = path_record.points
+            self.path_points = copy.deepcopy(path_record.points)
         else:
             raise ValueError("path_record和path_name不能同时为空")
         
-        if self.path_info.version != "2.0":
-            raise Exception("路线版本不匹配，请更新路线或前往路线编辑网站重新导出新版本的路线")
         # 路线脚本中的坐标为游戏原生坐标，whimbox使用时需要转换为图片像素坐标
         for point in self.path_points:
             pngmap_position = convert_GameLoc_to_PngMapPx(point.position, self.path_info.map)
@@ -70,10 +68,10 @@ class AutoPathTask(TaskTemplate):
             else:
                 self.material_count_dict[key] = value
 
-    def task_stop(self):
+    def task_stop(self, message="手动停止跑图"):
         if not self.need_stop():
-            super().task_stop(message="手动停止跑图")
-            self.log_to_gui("手动停止跑图", is_error=True)
+            super().task_stop(message=message)
+            self.log_to_gui(message, is_error=True)
 
     def _update_next_target_point(self):
         """更新下一个必经点"""
@@ -126,6 +124,9 @@ class AutoPathTask(TaskTemplate):
 
     @register_step("初始化各种信息")
     def step0(self):
+        if self.path_info.version != "2.0":
+            self.task_stop(message="路线版本不匹配，请更新路线或前往路线编辑网站重新导出新版本的路线")
+            return
         # 启动动作控制线程
         self.jump_controller = JumpController()
         self.move_controller = MoveController()
