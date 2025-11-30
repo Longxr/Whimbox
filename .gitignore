@@ -131,6 +131,7 @@ tools/*
 Logs/*
 logs/*
 scripts/*
+scripts_old/*
 configs/*
 config/*
 whimbox/assets/imgs/Maps/w01_v10.png
