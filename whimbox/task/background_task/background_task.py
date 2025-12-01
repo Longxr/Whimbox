@@ -274,7 +274,14 @@ class BackgroundTask:
                                     break
                             
                 except Exception as e:
-                    logger.error(f"后台小工具检测出错: {e}")
+                    # 如果游戏已经结束，退出循环
+                    if not HANDLE_OBJ.is_alive():
+                        break
+                    # 如果游戏最小化了
+                    if "cannot reshape array" in str(e):
+                        time.sleep(1)
+                    else:
+                        logger.error(f"后台小工具检测出错: {e}")
                 
                 # 等待一段时间再检测
                 time.sleep(self.check_interval)
