@@ -7,7 +7,9 @@ from whimbox.common.logger import logger
 from whimbox.common.path_lib import ASSETS_PATH
 
 # 错误替换表
-REPLACE_DICT = {}
+REPLACE_DICT = {
+    "拋掷": "抛掷",
+}
 
 class RapidOcr():
 
@@ -98,6 +100,6 @@ ocr = RapidOcr()
 # ---------------- 调用 Demo ----------------
 if __name__ == '__main__':
     from whimbox.interaction.interaction_core import itt
-    from whimbox.ui.ui_assets import AreaEscEntrances
-    img = itt.capture(AreaEscEntrances.position)
+    from whimbox.ui.ui_assets import *
+    img = itt.capture(AreaBlessHuanjingLevelsSelect.position)
     print(ocr.detect_and_ocr(img, show_res=True))
