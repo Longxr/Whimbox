@@ -266,6 +266,12 @@ class BackgroundTask:
                     if clear_config and clear_config.should_execute():
                         if self._detect_clear_opportunity(cap):
                             itt.key_press(keybind.KEYBIND_INTERACTION)
+                            # 清洁的跳过按钮和剧情动画的跳过按钮是一样的
+                            # 所以判断按了F后，跳过按钮是否消失，如果没消失就一直等待，避免又检测到跳过按钮，不断按F
+                            while not self.stop_event.is_set():
+                                time.sleep(0.3)
+                                if not itt.get_img_existence(IconSkip):
+                                    break
                             
                 except Exception as e:
                     logger.error(f"后台小工具检测出错: {e}")

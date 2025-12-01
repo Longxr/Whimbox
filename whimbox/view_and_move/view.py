@@ -75,7 +75,9 @@ def change_view_to_angle(tangle, offset:float=5, use_last_rotation=False):
 
 
 if __name__ == "__main__":
+    from whimbox.common.utils.ui_utils import back_to_page_main
     nikki_map.reinit_smallmap()
+    back_to_page_main()
     calibrate_view_rotation_ratio()
     print(f"view_rotation_ratio: {config['view_rotation_ratio']}")
     print(nikki_map.get_rotation())
