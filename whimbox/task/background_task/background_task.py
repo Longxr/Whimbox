@@ -11,6 +11,7 @@ from whimbox.common.utils.img_utils import crop
 from whimbox.task.task_template import STATE_TYPE_SUCCESS
 from whimbox.common.cvars import current_stop_flag
 from whimbox.common.keybind import keybind
+from whimbox.common.handle_lib import HANDLE_OBJ
 
 
 class BackgroundFeature(Enum):
@@ -172,8 +173,7 @@ class BackgroundTaskManager:
     
     def is_running(self) -> bool:
         """检查后台任务是否在运行"""
-        return (self.background_task is not None 
-                and self.background_task.is_running())
+        return self.background_task is not None and self.background_task.is_running()
 
 
 # 全局后台任务管理器实例
@@ -208,15 +208,27 @@ class BackgroundTask:
         return not self.stop_event.is_set()
     
     def run(self):
-        """主循环 - 持续检测画面并触发对应功能"""
-        try:            
+        """持续检测画面并触发对应功能"""
+        # 检查游戏窗口是否已存在，分辨率是否支持
+        while not self.stop_event.is_set():
+            if not HANDLE_OBJ.is_alive():
+                time.sleep(0.5)
+                continue
+            shape_ok, _, _ = HANDLE_OBJ.check_shape()
+            if not shape_ok:
+                time.sleep(0.5)
+                continue
+            break
+        logger.info("后台小工具开始运行")
+        
+        try:
             while not self.stop_event.is_set():
                 # 检测是否有前台任务在运行
                 if has_foreground_task():
                     # 有前台任务在运行，暂停后台任务
                     if not self.was_paused:
                         # 刚进入暂停状态
-                        logger.info("检测到前台任务运行，后台任务暂停")
+                        logger.info("检测到前台任务运行，后台小工具暂停")
                         self.was_paused = True
                     time.sleep(1)
                     continue
@@ -224,7 +236,7 @@ class BackgroundTask:
                     # 没有前台任务
                     if self.was_paused:
                         # 刚从暂停状态恢复
-                        logger.info("前台任务结束，后台任务恢复运行")
+                        logger.info("前台任务结束，后台小工具恢复运行")
                         self.was_paused = False
                 
                 # 检测各种画面状态
@@ -256,15 +268,15 @@ class BackgroundTask:
                             itt.key_press(keybind.KEYBIND_INTERACTION)
                             
                 except Exception as e:
-                    logger.error(f"后台任务检测出错: {e}")
+                    logger.error(f"后台小工具检测出错: {e}")
                 
                 # 等待一段时间再检测
                 time.sleep(self.check_interval)
         
         except Exception as e:
-            logger.error(f"后台任务运行出错: {e}")
+            logger.error(f"后台小工具运行出错: {e}")
         finally:
-            logger.info("后台任务已停止")
+            logger.info("后台小工具已停止")
     
     def _detect_fishing_opportunity(self, cap) -> bool:
         """检测是否可以钓鱼"""

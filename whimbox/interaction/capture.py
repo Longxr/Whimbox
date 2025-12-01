@@ -69,27 +69,18 @@ class Capture():
                     logger.debug(f"capps: {r/3}")
                 elif r >= 40*3:
                     logger.info(f"capps: {r/3}")
-        self._capture(force)
-        self.capture_cache_lock.acquire()
-        cp = self.capture_cache.copy()
-        self.capture_cache_lock.release()
+        with self.capture_cache_lock:
+            self._capture(force)
+            cp = self.capture_cache.copy()
         return cp
     
     def _capture(self, force) -> None:
         if (self.fps_timer.get_diff_time() >= 1/self.max_fps) or force:
             self.fps_timer.reset()
-            self.capture_cache_lock.acquire()
-            self.capture_times+=1
-            while 1:
-                normalized_img = self._normalize_shape(self._get_capture())
-                if normalized_img is not None:
-                    self.capture_cache = normalized_img
-                    break
-                else:
-                    time.sleep(2)
-            self.capture_cache_lock.release()
-        else:
-            pass
+            self.capture_times += 1
+            normalized_img = self._normalize_shape(self._get_capture())
+            if normalized_img is not None:
+                self.capture_cache = normalized_img
     
 from ctypes.wintypes import RECT
 import win32print, win32api

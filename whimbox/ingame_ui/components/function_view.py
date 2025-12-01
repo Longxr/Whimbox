@@ -300,9 +300,6 @@ class FunctionView(QWidget):
             # 更新状态标签
             is_running = background_manager.is_running()
             self._update_status_label(is_running)
-            
-            if is_running:
-                logger.info("后台任务已在运行")
                 
         except Exception as e:
             logger.error(f"加载后台任务状态失败: {e}")

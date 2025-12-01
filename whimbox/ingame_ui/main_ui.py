@@ -82,6 +82,7 @@ class IngameUI(QWidget):
         # 添加欢迎消息（仅在首次展开时）
         if self.chat_view and not self.chat_view.has_messages():
             self.chat_view.add_message("👋 您好！我是奇想盒📦，你可以直接选择功能，或者和我聊天。", 'ai')
+            self.chat_view.add_message("❗请确认游戏分辨率为1920x1080或2560x1440。如已设置，请忽略~", "ai")
     
     def create_expanded_widget(self):
         """创建展开状态的聊天界面"""
