@@ -241,9 +241,9 @@ if __name__ == "__main__":
     CV_DEBUG_MODE = True
     from whimbox.ui.material_icon_assets import material_icon_dict
     # material_name = "纯真丝线"
-    material_name = "玉簪蚱蜢"
-    target = material_icon_dict[material_name]["icon"]
-    scroll_find_click(AreaBigMapMaterialSelect, target, threshold=0.8, scale=0.45)
+    # material_name = "玉簪蚱蜢"
+    # target = material_icon_dict[material_name]["icon"]
+    # scroll_find_click(AreaBigMapMaterialSelect, target, threshold=0.8, scale=0.45)
     # cap = itt.capture(posi=AreaDigItemSelect.position)
     # find_game_img(target, cap, threshold=0.7, scale=0.46)
     # cap = itt.capture(posi=AreaBigMapMaterialSelect.position)
@@ -252,5 +252,7 @@ if __name__ == "__main__":
     # hsv_limit = [np.array([0, 0, 100]), np.array([180, 60, 255])]
     # # scroll_find_click(AreaDigMainTypeSelect, IconMaterialTypeMonster, threshold=0.85, hsv_limit=hsv_limit, scale=1.233)
     # scroll_find_click(AreaDigSubTypeSelect, IconMaterialTypeInsect, threshold=0.85, hsv_limit=hsv_limit, scale=0.83)
+
+    scroll_find_click(AreaBlessHuanjingLevelsSelect, "翻滚", str_match_mode=1)
 
     
