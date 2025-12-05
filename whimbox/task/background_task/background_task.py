@@ -329,7 +329,7 @@ class BackgroundTask:
 
     def _detect_pickup_opportunity(self, cap) -> bool:
         """检测是否可以采集"""
-        cap = crop(cap, AreaFPickup.position)
+        cap = crop(cap, AreaPickup.position)
         if itt.get_img_existence(IconPickupFeature, cap=cap):
             return True
         return False

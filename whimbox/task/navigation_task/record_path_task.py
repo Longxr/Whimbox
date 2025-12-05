@@ -31,9 +31,6 @@ class RecordPathTask(TaskTemplate):
 
 
     def recognize(self):
-        # if itt.get_text_existence(TextFPickUp):
-        #     self.log_to_gui(f"识别到采集点，已记录")
-        #     self._add_point(nikki_map.get_position(), POINT_TYPE_TARGET, MOVE_MODE_WALK, ACTION_PICK_UP)
         self._add_point(nikki_map.get_position(), POINT_TYPE_TARGET, MOVE_MODE_WALK, ACTION_PICK_UP)
         self.log_to_gui(f"记录点位成功")
 

@@ -1,6 +1,6 @@
 from whimbox.task.task_template import TaskTemplate, register_step
 from whimbox.interaction.interaction_core import itt
-from whimbox.ui.ui_assets import TextFPickUp
+from whimbox.ui.ui_assets import TextPickUp
 from whimbox.common.cvars import DEBUG_MODE
 from whimbox.common.utils.ui_utils import skip_to_page_main
 from whimbox.common.keybind import keybind
@@ -13,11 +13,11 @@ class PickupTask(TaskTemplate):
     @register_step("开始采集")
     def step1(self):
         while not self.need_stop():
-            texts = itt.ocr_multiple_lines(TextFPickUp.cap_area)
+            texts = itt.ocr_multiple_lines(TextPickUp.cap_area)
             # 预处理texts，去除非中文的元素
             texts = [text for text in texts if any('\u4e00' <= char <= '\u9fff' for char in text)]
             
-            if len(texts) == 2 and texts[1] == TextFPickUp.text:
+            if len(texts) == 2 and texts[1] == TextPickUp.text:
                 pickup_item = texts[0]
                 if pickup_item in self.material_count_dict:
                     self.material_count_dict[pickup_item] += 1
