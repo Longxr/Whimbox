@@ -22,7 +22,8 @@ class StartGameTask(TaskTemplate):
     def step1(self):
         # 判断游戏是否已经在运行
         if HANDLE_OBJ.get_handle():
-            return "step2"
+            self.task_stop("游戏已经在运行，无需自动启动")
+            return
         
         # 判断启动器是否已经在运行
         launcher_handle = ProcessHandler(process_name="xstarter.exe")
@@ -42,18 +43,19 @@ class StartGameTask(TaskTemplate):
                 self.task_stop("未能自动找到叠纸启动器路径，请手动打开游戏或在奇想盒设置中设置")
                 return
 
-            subprocess.Popen(
-                launcher_path, 
-                creationflags=(
-                    subprocess.DETACHED_PROCESS |
-                    subprocess.CREATE_NO_WINDOW |
-                    subprocess.CREATE_NEW_PROCESS_GROUP
-                ),
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                close_fds=True
-            )
+            # subprocess.Popen(
+            #     launcher_path, 
+            #     creationflags=(
+            #         subprocess.DETACHED_PROCESS |
+            #         subprocess.CREATE_NO_WINDOW |
+            #         subprocess.CREATE_NEW_PROCESS_GROUP
+            #     ),
+            #     stdin=subprocess.DEVNULL,
+            #     stdout=subprocess.DEVNULL,
+            #     stderr=subprocess.DEVNULL,
+            #     close_fds=True
+            # )
+            os.startfile(launcher_path)
         
             launcher_handle = ProcessHandler(process_name="xstarter.exe")
             while not self.need_stop():

@@ -40,13 +40,13 @@ def run_app():
     mcp_thread.start()
     asyncio.run(mcp_agent.start())
 
-    from whimbox.common.handle_lib import HANDLE_OBJ
-    import time
-    logger.info("WAIT_FOR_GAME_START")
-    while not HANDLE_OBJ.get_handle():
-        time.sleep(5)
-        HANDLE_OBJ.refresh_handle()
-    logger.info("GAME_STARTED")
+    # from whimbox.common.handle_lib import HANDLE_OBJ
+    # import time
+    # logger.info("WAIT_FOR_GAME_START")
+    # while not HANDLE_OBJ.get_handle():
+    #     time.sleep(5)
+    #     HANDLE_OBJ.refresh_handle()
+    # logger.info("GAME_STARTED")
 
     from whimbox.ingame_ui.ingame_ui import run_ingame_ui
     run_ingame_ui()

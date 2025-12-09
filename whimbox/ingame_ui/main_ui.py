@@ -299,12 +299,12 @@ class IngameUI(QWidget):
     def on_function_clicked(self, config: dict):
         """统一处理功能按钮点击"""
         self.give_back_focus()
-        shape_ok, width, height = HANDLE_OBJ.check_shape()
-        logger.info(f"分辨率: {width}x{height}")
-        if not shape_ok:
-            self.chat_view.add_message("请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440", 'error')
-            self.switch_to_chat_view()
-            return
+        # shape_ok, width, height = HANDLE_OBJ.check_shape()
+        # logger.info(f"分辨率: {width}x{height}")
+        # if not shape_ok:
+        #     self.chat_view.add_message("请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440", 'error')
+        #     self.switch_to_chat_view()
+        #     return
         
         # 检查是否已有任务在运行
         if self.task_worker and self.task_worker.isRunning():
@@ -557,8 +557,6 @@ class IngameUI(QWidget):
         if self.isVisible():
             if HANDLE_OBJ.is_foreground() and not self.focus_on_game:
                 self.give_back_focus()
-            elif not HANDLE_OBJ.is_foreground() and self.focus_on_game:
-                self.acquire_focus()
     
     def update_message(self, message: str, type="update_ai_message"):
         """更新聊天消息"""

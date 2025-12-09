@@ -6,6 +6,7 @@ from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
 from whimbox.config.config import global_config
 from whimbox.task.daily_task.cvar import *
+from whimbox.task.common_task.start_game_task import StartGameTask
 
 
 class AllInOneTask(TaskTemplate):
@@ -18,6 +19,11 @@ class AllInOneTask(TaskTemplate):
             'monthly_pass_task': False,
             'energy_cost_task': False,
         }
+
+    @register_step("自动启动游戏")
+    def step0(self):
+        start_game_task = StartGameTask()
+        start_game_task.task_run()
 
     @register_step("美鸭梨挖掘")
     def step1(self):

@@ -9,7 +9,7 @@ from whimbox.task.background_task import background_manager, BackgroundFeature
 # 功能按钮配置列表
 FUNCTION_BUTTONS = [
     {
-        'label': '一条龙',
+        'label': '启动游戏并一条龙',
         'task_name': 'all_in_one_task',
         'task_params': {},
         'start_message': '开始一条龙，按 / 结束任务\n',

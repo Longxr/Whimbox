@@ -3,19 +3,39 @@ from whimbox.common.scripts_manager import scripts_manager
 from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 from whimbox.task.navigation_task.record_path_task import RecordPathTask
 from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
-from whimbox.task.event_task.roll_dice_task import RollDiceTask
 from whimbox.task.task_template import STATE_TYPE_SUCCESS, STATE_TYPE_ERROR
 from whimbox.common.logger import logger
 from whimbox.common.cvars import MCP_CONFIG
+from whimbox.task.background_task.background_task import background_manager
+from whimbox.common.handle_lib import HANDLE_OBJ
 
 import socket
+import functools
 from fastmcp import FastMCP
 from starlette.responses import JSONResponse
+
+def check_game_ok(func):
+    @functools.wraps(func)
+    async def wrapper(**kwargs):
+        if not background_manager.is_game_started:
+            return {
+                "status": STATE_TYPE_ERROR,
+                "message": "游戏未启动，请先启动游戏"
+            }
+        shape_ok, _, _ = HANDLE_OBJ.check_shape()
+        if not shape_ok:
+            return {
+                "status": STATE_TYPE_ERROR,
+                "message": "请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440"
+            }
+        return await func(**kwargs)
+    return wrapper
 
 mcp = FastMCP('whimbox_server')
 
 
 @mcp.tool()
+@check_game_ok
 async def jihua_task(target_material=None, cost_material=None) -> dict:
     """
     素材激化：消耗活跃能量，用大世界材料换取噗灵、丝线、闪亮泡泡
@@ -33,6 +53,7 @@ async def jihua_task(target_material=None, cost_material=None) -> dict:
 
 
 @mcp.tool()
+@check_game_ok
 async def bless_task(level_name=None) -> dict:
     """
     消耗活跃能量，获取祝福闪光
@@ -52,6 +73,7 @@ async def bless_task(level_name=None) -> dict:
 
 
 @mcp.tool()
+@check_game_ok
 async def monster_task(level_name=None) -> dict:
     """
     消耗活跃能量，挑战魔物试炼幻境
@@ -77,6 +99,7 @@ async def monster_task(level_name=None) -> dict:
 
 
 @mcp.tool()
+@check_game_ok
 async def dig_task(target_item_list=None) -> dict:
     """
     美鸭梨挖掘，只有当明确说明“挖掘”或“美鸭梨挖掘”时才能调用这个工具
@@ -92,6 +115,7 @@ async def dig_task(target_item_list=None) -> dict:
     return task_result.to_dict()
 
 @mcp.tool()
+@check_game_ok
 async def zhaoxi_task() -> dict:
     """
     检查每日任务（朝夕心愿）的进度
@@ -105,6 +129,7 @@ async def zhaoxi_task() -> dict:
 
 
 @mcp.tool()
+@check_game_ok
 async def navigation_task(target=None, type=None, count=None) -> dict:
     """
     指定素材名，或素材获取方法，进行获取。还可以指定要获取的数量
@@ -135,6 +160,7 @@ async def navigation_task(target=None, type=None, count=None) -> dict:
         return task_result.to_dict()
 
 @mcp.tool()
+@check_game_ok
 async def load_path(path_name: str) -> dict:
     """
     加载并测试指定的跑图路径文件
@@ -157,6 +183,7 @@ async def load_path(path_name: str) -> dict:
         return task_result.to_dict()
 
 @mcp.tool()
+@check_game_ok
 async def record_path() -> dict:
     """
     记录跑图路线
@@ -180,6 +207,7 @@ async def open_path_folder() -> dict:
     }
 
 @mcp.tool()
+@check_game_ok
 async def daily_photo_task() -> dict:
     """
     简单拍照，用于完成每日任务
@@ -201,6 +229,7 @@ async def all_in_one_task() -> dict:
     return task_result.to_dict()
 
 @mcp.tool()
+@check_game_ok
 async def monthly_pass_task() -> dict:
     """
     领取奇迹之旅（大月卡）奖励
