@@ -12,8 +12,8 @@ from whimbox.common.logger import logger
 from whimbox.config.config import global_config
 
 from whimbox.ingame_ui.components import SettingsDialog, ChatView, PathSelectionDialog, MacroSelectionDialog, FunctionView
-from whimbox.mcp_agent import mcp_agent
 from whimbox.ingame_ui.workers.call_worker import TaskCallWorker
+from whimbox.task.background_task.background_task import background_manager
 
 update_time = 500  # ui更新间隔，ms
 
@@ -591,6 +591,9 @@ class IngameUI(QWidget):
         if self.isVisible():
             if HANDLE_OBJ.is_foreground() and not self.focus_on_game:
                 self.give_back_focus()
+            # 如果游戏是从运行状态被关闭，就一起退出奇想盒
+            if background_manager.is_game_started and not HANDLE_OBJ.is_alive():
+                exit(0)
     
     def update_message(self, message: str, type="update_ai_message"):
         """更新聊天消息"""

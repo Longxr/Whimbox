@@ -81,7 +81,7 @@ class ScriptsManager:
                     try:
                         json_text = f.read()
                         json_dict = json.loads(json_text)
-                        if json_dict['info']['type'] == 'macro':
+                        if json_dict['info']['type'] == '宏':
                             macro_record = MacroRecord.model_validate_json(json_text)
                             macro_name = macro_record.info.name
                             if macro_name in self.macro_dict:

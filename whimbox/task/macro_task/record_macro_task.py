@@ -236,8 +236,8 @@ class RecordMacroTask(TaskTemplate):
         macro_filename = f"{macro_name}.json"
         macro_info = MacroInfo(
             name=macro_name,
-            type="macro",
-            version="1.0",
+            type="宏",
+            version="2.0",
             update_time=time.strftime("%Y-%m-%d %H:%M:%S", now),
             offset=0.0
         )
