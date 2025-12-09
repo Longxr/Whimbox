@@ -1,7 +1,6 @@
 
-from whimbox.common.cvars import IMG_RATE
 from whimbox.common.utils.posi_utils import area_center
-from whimbox.task.task_template import TaskTemplate, register_step
+from whimbox.task.task_template import TaskTemplate, register_step, STATE_TYPE_SUCCESS
 from whimbox.config.config import global_config
 from whimbox.common.path_lib import find_game_launcher_folder
 from whimbox.common.handle_lib import ProcessHandler
@@ -11,8 +10,9 @@ from whimbox.common.handle_lib import HANDLE_OBJ
 from whimbox.ui.ui_assets import *
 from whimbox.interaction.interaction_core import itt
 from whimbox.task.background_task.background_task import background_manager
+from whimbox.common.logger import logger
 
-import subprocess, os, time
+import os, time
 
 class StartGameTask(TaskTemplate):
     def __init__(self):
@@ -22,8 +22,8 @@ class StartGameTask(TaskTemplate):
     def step1(self):
         # 判断游戏是否已经在运行
         if HANDLE_OBJ.get_handle():
-            self.task_stop("游戏已经在运行，无需自动启动")
-            return
+            self.update_task_result(status=STATE_TYPE_SUCCESS, message="游戏已经在运行，无需自动启动")
+            return None
         
         # 判断启动器是否已经在运行
         launcher_handle = ProcessHandler(process_name="xstarter.exe")
@@ -34,14 +34,14 @@ class StartGameTask(TaskTemplate):
                 launcher_path = os.path.join(launcher_path, "launcher.exe")
                 if launcher_path == "":
                     self.task_stop("未能自动找到叠纸启动器路径，请手动打开游戏或在奇想盒设置中设置")
-                    return
+                    return None
                 else:
                     global_config.set("Path", "launcher_path", launcher_path)
                     global_config.save()
             
             if not os.path.exists(launcher_path):
                 self.task_stop("未能自动找到叠纸启动器路径，请手动打开游戏或在奇想盒设置中设置")
-                return
+                return None
 
             # subprocess.Popen(
             #     launcher_path, 
@@ -55,7 +55,12 @@ class StartGameTask(TaskTemplate):
             #     stderr=subprocess.DEVNULL,
             #     close_fds=True
             # )
-            os.startfile(launcher_path)
+            try:
+                os.startfile(launcher_path)
+            except Exception as e:
+                logger.error(f"打开叠纸启动器失败: {e}")
+                self.task_stop(f"打开叠纸启动器失败, 请手动打开游戏")
+                return None
         
             launcher_handle = ProcessHandler(process_name="xstarter.exe")
             while not self.need_stop():
@@ -77,7 +82,7 @@ class StartGameTask(TaskTemplate):
             launcher_itt.move_and_click(click_posi)
         else:
             self.task_stop("未找到启动游戏按钮")
-            return
+            return None
 
     @register_step("进入游戏")
     def step2(self):
@@ -85,8 +90,9 @@ class StartGameTask(TaskTemplate):
         self.log_to_gui("等待游戏窗口出现，等待分辨率恢复正常")
         while not self.need_stop() and not background_manager.is_game_started:
             time.sleep(1)
+        HANDLE_OBJ.set_foreground()
         if itt.get_img_existence(IconPageMainFeature):
-            self.log_to_gui("成功进入游戏")
+            self.update_task_result(status=STATE_TYPE_SUCCESS, message="成功进入游戏")
             return
         # 检测是否在登录界面了
         while not self.need_stop():
@@ -111,7 +117,7 @@ class StartGameTask(TaskTemplate):
             itt.move_and_click((1920/2, 1080/2))
             if itt.get_img_existence(IconPageMainFeature):
                 break
-        self.log_to_gui("成功进入游戏")
+        self.update_task_result(status=STATE_TYPE_SUCCESS, message="成功进入游戏")
 
     def handle_finally(self):
         pass

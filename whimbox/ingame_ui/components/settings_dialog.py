@@ -207,6 +207,8 @@ class SettingsDialog(QDialog):
             cn_name = "改键（如果修改了游戏里的键位设置，请在这里同步修改）"
         elif section_name == "BackgroundTask":
             cn_name = "自动小工具"
+        elif section_name == "Path":
+            cn_name = "路径设置"
         else:
             cn_name = section_name
         group_box = QGroupBox(cn_name)

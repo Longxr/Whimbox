@@ -23,7 +23,13 @@ class AllInOneTask(TaskTemplate):
     @register_step("自动启动游戏")
     def step0(self):
         start_game_task = StartGameTask()
-        start_game_task.task_run()
+        task_result = start_game_task.task_run()
+        if task_result.status == STATE_TYPE_SUCCESS:
+            self.log_to_gui(task_result.message)
+            return "step1"
+        else:
+            self.log_to_gui(task_result.message, is_error=True)
+            return "step7"
 
     @register_step("美鸭梨挖掘")
     def step1(self):
