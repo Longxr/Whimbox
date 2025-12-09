@@ -3,6 +3,8 @@ from whimbox.common.scripts_manager import scripts_manager
 from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 from whimbox.task.navigation_task.record_path_task import RecordPathTask
 from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
+from whimbox.task.macro_task.record_macro_task import RecordMacroTask
+from whimbox.task.macro_task.run_macro_task import RunMacroTask
 from whimbox.task.task_template import STATE_TYPE_SUCCESS, STATE_TYPE_ERROR
 from whimbox.common.logger import logger
 from whimbox.common.cvars import MCP_CONFIG
@@ -193,6 +195,38 @@ async def record_path() -> dict:
     """
     task = RecordPathTask()
     task_result = task.task_run()
+    return task_result.to_dict()
+
+@mcp.tool()
+@check_game_ok
+async def record_macro() -> dict:
+    """
+    录制宏
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
+    """
+    record_macro_task = RecordMacroTask()
+    task_result = record_macro_task.task_run()
+    return task_result.to_dict()
+
+@mcp.tool()
+@check_game_ok
+async def run_macro(macro_name: str) -> dict:
+    """
+    运行宏
+    Args:
+        macro_filename: 宏名称
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
+    """
+    macro_record = scripts_manager.query_macro(macro_name)
+    if macro_record is None:
+        return {
+            "status": STATE_TYPE_ERROR,
+            "message": f"宏\"{macro_name}\"不存在"
+        }
+    run_macro_task = RunMacroTask(macro_name)
+    task_result = run_macro_task.task_run()
     return task_result.to_dict()
 
 @mcp.tool()

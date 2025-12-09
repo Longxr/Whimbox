@@ -208,7 +208,100 @@ class ScriptsManager:
             return False, f"无法打开路线文件夹:{str(e)}"
         return True, f"已打开路线文件夹:{SCRIPT_PATH}"
 
-    def query_macro(self, macro_name) -> MacroRecord | None:
-        return self.macro_dict.get(macro_name, None)
+    def query_macro(self, name=None) -> list[MacroRecord] | MacroRecord | None:
+        """
+        查询宏
+        
+        Args:
+            name: 宏名称，如果提供则返回单个宏，否则返回所有宏的列表（支持模糊匹配）
+            
+        Returns:
+            如果指定name且找到，返回单个MacroRecord；如果name为None，返回匹配的列表
+        """
+        # 指定名字就直接返回单文件
+        if name:
+            # 尝试精确匹配
+            if name in self.macro_dict:
+                return self.macro_dict[name]
+            
+            # 模糊匹配
+            res = []
+            for macro_name, macro_record in self.macro_dict.items():
+                if name.lower() in macro_name.lower():
+                    res.append(macro_record)
+            return res
+        
+        # 返回所有宏
+        return list(self.macro_dict.values())
+    
+    def delete_macro(self, macro_name: str) -> int:
+        """
+        删除指定名称的宏
+        
+        Args:
+            macro_name: 宏名称
+            
+        Returns:
+            删除的文件数量，如果出错返回 0
+        """
+        if not macro_name:
+            logger.warning("Macro name is empty, cannot delete")
+            return 0
+        
+        if not os.path.exists(SCRIPT_PATH):
+            logger.warning(f"Script path does not exist: {SCRIPT_PATH}")
+            return 0
+        
+        try:
+            target_filepath = []
+            for file in os.listdir(SCRIPT_PATH):
+                if not file.endswith(".json"):
+                    continue
+                
+                file_path = os.path.join(SCRIPT_PATH, file)
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        try:
+                            macro_data = json.load(f)
+                            # 检查宏名是否匹配
+                            if macro_data.get("info", {}).get("name") == macro_name:
+                                target_filepath.append(file_path)
+                        except (json.JSONDecodeError, KeyError, TypeError):
+                            # 跳过格式错误的文件
+                            continue
+                except Exception as e:
+                    logger.warning(f"Failed to read file {file}: {e}")
+                    continue
+            
+            # 删除成功后，重新初始化脚本字典
+            deleted_count = 0
+            for file_path in target_filepath:
+                try:
+                    os.remove(file_path)
+                    deleted_count += 1
+                except Exception as e:
+                    logger.warning(f"Failed to delete file {file_path}: {e}")
+                    continue
+            if deleted_count > 0:
+                self.init_scripts_dict()
+                logger.info(f"Deleted {deleted_count} file(s) for macro '{macro_name}'")
+            return deleted_count
+            
+        except Exception as e:
+            logger.error(f"Failed to delete macro '{macro_name}': {e}")
+            return 0
+    
+    def open_macro_folder(self):
+        """打开宏文件夹（实际上和路线文件夹是同一个）"""
+        try:
+            if os.path.exists(SCRIPT_PATH):
+                os.startfile(SCRIPT_PATH)
+                logger.info(f"Opened macro folder: {SCRIPT_PATH}")
+            else:
+                return False, f"宏文件夹不存在:{SCRIPT_PATH}"
+        except Exception as e:
+            logger.error(f"Failed to open macro folder: {e}")
+            return False, f"无法打开宏文件夹:{str(e)}"
+        return True, f"已打开宏文件夹:{SCRIPT_PATH}"
 
 scripts_manager = ScriptsManager()

@@ -25,6 +25,18 @@ FUNCTION_BUTTONS = [
         'task_name': 'record_path',
         'task_params': {},
         'start_message': '开始录制路线，按 / 停止录制\n',
+    },
+    {
+        'label': '运行宏',
+        'task_name': 'run_macro',
+        'needs_dialog': True,  # 需要弹出对话框
+        'dialog_type': 'macro_selection',
+    },
+    {
+        'label': '录制宏',
+        'task_name': 'record_macro',
+        'task_params': {},
+        'start_message': '开始录制宏，按 / 停止录制\n',
     }
 ]
 

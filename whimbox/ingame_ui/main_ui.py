@@ -6,12 +6,13 @@ from PyQt5.QtGui import *
 from pynput import keyboard
 import sys
 from importlib.metadata import version, PackageNotFoundError
+from pathlib import Path
 
 from whimbox.common.handle_lib import HANDLE_OBJ
 from whimbox.common.logger import logger
 from whimbox.config.config import global_config
 
-from whimbox.ingame_ui.components import SettingsDialog, ChatView, PathSelectionDialog, FunctionView
+from whimbox.ingame_ui.components import SettingsDialog, ChatView, PathSelectionDialog, MacroSelectionDialog, FunctionView
 from whimbox.mcp_agent import mcp_agent
 from whimbox.ingame_ui.workers.call_worker import TaskCallWorker
 
@@ -35,6 +36,7 @@ class IngameUI(QWidget):
         self.view_toggle_button = None  # 视图切换按钮
         self.settings_dialog = None
         self.path_dialog = None
+        self.macro_dialog = None
         self.task_worker = None  # 任务worker
         self.title_label = None  # 标题标签（用于焦点状态显示）
         
@@ -56,7 +58,10 @@ class IngameUI(QWidget):
 
         # 窗口设置
         self.setWindowTitle("奇想盒")
-        self.setWindowIcon(QIcon("icon.ico"))
+        # 获取打包后的图标路径
+        icon_path = Path(__file__).parent.parent / "assets" / "icon.ico"
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         hwnd = int(self.winId())
@@ -322,6 +327,11 @@ class IngameUI(QWidget):
                 self.path_dialog.path_selected.connect(lambda path: self.start_task_with_path(config, path))
                 self.path_dialog.show_centered()
                 self.path_dialog.exec_()
+            elif config['dialog_type'] == 'macro_selection':
+                self.macro_dialog = MacroSelectionDialog(self)
+                self.macro_dialog.macro_selected.connect(lambda macro: self.start_task_with_macro(config, macro))
+                self.macro_dialog.show_centered()
+                self.macro_dialog.exec_()
         else:
             # 直接启动任务
             self.start_task(config)
@@ -371,6 +381,31 @@ class IngameUI(QWidget):
         self.task_worker.start()
         
         logger.info(f"Task started: {config['task_name']} with path: {path_name}")
+    
+    def start_task_with_macro(self, config: dict, macro_name: str):
+        """启动需要宏参数的任务"""
+        # 将焦点返回给游戏
+        self.give_back_focus(title_text="⚪ 📦 奇想盒 [任务运行中，按 / 结束任务]")
+        
+        # 禁用所有按钮
+        if self.function_view:
+            self.function_view.set_all_buttons_enabled(False)
+        
+        # 在聊天视图中显示消息
+        if self.chat_view:
+            self.chat_view.add_message(f'开始运行宏：{macro_name}，按 / 结束任务\n', 'ai')
+        
+        # 合并宏参数
+        params = dict(config.get('task_params', {}))
+        params['macro_name'] = macro_name
+        
+        # 创建并启动worker
+        self.task_worker = TaskCallWorker(config['task_name'], params)
+        self.task_worker.progress.connect(self.on_task_progress)
+        self.task_worker.finished.connect(self.on_task_finished)
+        self.task_worker.start()
+        
+        logger.info(f"Task started: {config['task_name']} with macro: {macro_name}")
     
     def on_task_progress(self, message: str):
         """处理任务进度消息"""

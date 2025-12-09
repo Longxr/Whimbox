@@ -191,7 +191,7 @@ class RecordMacroTask(TaskTemplate):
             logger.error(f"鼠标点击记录错误: {e}")
     
     
-    @register_step(state_msg="开始录制宏")
+    @register_step(state_msg="准备中，请稍等")
     def step1(self):
         """开始录制步骤"""
         # 初始化录制状态
@@ -218,7 +218,7 @@ class RecordMacroTask(TaskTemplate):
         
         logger.info("开始录制宏")
         
-    @register_step(state_msg="等待录制完成")
+    @register_step(state_msg="开始操作吧，不支持录制视角转动操作！")
     def step2(self):
         """等待录制完成"""
         # 持续等待直到停止录制

@@ -75,7 +75,6 @@ class StartGameTask(TaskTemplate):
             target_box = text_box_dict['启动游戏']
             click_posi = area_center(target_box)
             launcher_itt.move_and_click(click_posi)
-            self.log_to_gui("启动游戏成功")
         else:
             self.task_stop("未找到启动游戏按钮")
             return
