@@ -1,13 +1,17 @@
 from typing import Dict, Any
 import win32gui
 import sys
+import os
+import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 from whimbox.common.logger import logger
+from whimbox.common.path_lib import ASSETS_PATH
 from whimbox.config.default_config import DEFAULT_CONFIG
 from whimbox.config.config import global_config
+from whimbox.ui.material_icon_assets import material_icon_dict
 
 
 class SaveConfigWorker(QThread):
@@ -47,10 +51,21 @@ class SettingsDialog(QDialog):
         self.save_button = None  # 保存按钮引用
         self.cancel_button = None  # 取消按钮引用
         self.save_worker = None  # 保存配置的Worker
+        self.setting_options = self.load_setting_options()  # 加载设置选项
         
         self.init_ui()
         self.load_config()
         
+    def load_setting_options(self) -> Dict[str, Any]:
+        """加载设置选项文件"""
+        try:
+            setting_options_path = os.path.join(ASSETS_PATH, 'setting_options.json')
+            with open(setting_options_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            logger.error(f"加载设置选项失败: {e}")
+            return {}
+    
     def init_ui(self):
         """初始化UI"""
         self.setWindowTitle("⚙️ 设置")
@@ -202,7 +217,7 @@ class SettingsDialog(QDialog):
         elif section_name == "Agent":
             cn_name = "大模型"
         elif section_name == "Game":
-            cn_name = "游戏"
+            cn_name = "游戏（输入关键字自动搜索）"
         elif section_name == "Keybinds":
             cn_name = "改键（如果修改了游戏里的键位设置，请在这里同步修改）"
         elif section_name == "BackgroundTask":
@@ -316,6 +331,9 @@ class SettingsDialog(QDialog):
                     border: 2px solid #2196F3;
                 }
             """)
+            
+            # 为输入框添加自动提示功能
+            self.add_completer_if_needed(input_widget, key)
         
         item_layout.addWidget(input_widget)
         
@@ -323,6 +341,60 @@ class SettingsDialog(QDialog):
         self.input_widgets[f"{section}.{key}"] = input_widget
         
         return item_widget
+    
+    def add_completer_if_needed(self, input_widget: QLineEdit, key: str):
+        """为输入框添加自动提示功能（如果需要）"""
+        completion_list = []
+        
+        # 特殊处理 jihua_cost: 从 material_icon_dict 获取材料名称
+        if key == "jihua_cost":
+            completion_list = list(material_icon_dict.keys())
+        # 如果 key 在 setting_options.json 中存在，使用对应的选项列表
+        elif key in self.setting_options:
+            completion_list = self.setting_options[key]
+        
+        # 如果有候选项，添加自动提示
+        if completion_list:
+            completer = QCompleter(completion_list, self)
+            completer.setCaseSensitivity(Qt.CaseInsensitive)  # 不区分大小写
+            completer.setFilterMode(Qt.MatchContains)  # 包含匹配模式
+            completer.setCompletionMode(QCompleter.PopupCompletion)  # 弹出式补全
+            
+            # 设置下拉框样式
+            popup = completer.popup()
+            popup.setStyleSheet("""
+                QListView {
+                    background-color: white;
+                    border: 1px solid #BDBDBD;
+                    border-radius: 4px;
+                    padding: 5px;
+                    font-size: 16px;
+                }
+                QListView::item {
+                    padding: 5px;
+                    border-radius: 2px;
+                }
+                QListView::item:hover {
+                    background-color: #E3F2FD;
+                }
+                QListView::item:selected {
+                    background-color: #2196F3;
+                    color: white;
+                }
+            """)
+            
+            input_widget.setCompleter(completer)
+            
+            # 添加点击展开下拉框的功能
+            def show_completer_on_focus(event):
+                # 先调用原始的focusInEvent
+                QLineEdit.focusInEvent(input_widget, event)
+                # 显示所有补全选项
+                completer.setCompletionPrefix("")
+                completer.complete()
+            
+            # 重写focusInEvent
+            input_widget.focusInEvent = show_completer_on_focus
     
     def load_config(self):
         """从 global_config 加载配置到界面"""
