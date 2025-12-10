@@ -19,6 +19,14 @@
         "ui_position_y": {
             "value": "10",
             "description": "UI窗口在屏幕上的绝对垂直位置（像素）"
+        },
+        "ui_width": {
+            "value": "500",
+            "description": "UI窗口的宽度（像素）"
+        },
+        "ui_height": {
+            "value": "600",
+            "description": "UI窗口的高度（像素）"
         }
     },
     "Path":{

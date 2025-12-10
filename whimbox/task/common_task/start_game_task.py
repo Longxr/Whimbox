@@ -92,15 +92,16 @@ class StartGameTask(TaskTemplate):
         self.log_to_gui("等待游戏窗口出现，等待分辨率恢复正常")
         retry_time = 10
         while not self.need_stop():
-            time.sleep(1)
+            time.sleep(5)
             if background_manager.is_game_started:
                 retry_time -= 1
                 shape_ok, width, height = HANDLE_OBJ.check_shape()
-                logger.info(f"游戏分辨率: {width}x{height}")
                 if shape_ok:
                     HANDLE_OBJ.set_foreground()
                     break
                 else:
+                    if retry_time == 8:
+                        self.log_to_gui(f"当前游戏分辨率为{width}x{height}，请等待分辨率恢复正常，或手动设置游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440")
                     if retry_time <= 0:
                         self.task_stop(f"当前游戏分辨率为{width}x{height}，请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440")
                         return

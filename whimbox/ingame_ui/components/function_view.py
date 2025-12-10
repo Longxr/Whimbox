@@ -69,15 +69,46 @@ class FunctionView(QWidget):
                 background-color: transparent;
                 border: none;
             }
+            QScrollArea {
+                background-color: transparent;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background-color: rgba(240, 240, 240, 150);
+                width: 10px;
+                border-radius: 5px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #2196F3;
+                border-radius: 5px;
+                min-height: 30px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #1976D2;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+            }
         """)
         
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
         
-        # 后台任务区域
+        # 后台任务区域（固定在顶部，不滚动）
         background_container = self.create_background_task_section()
         layout.addWidget(background_container)
+        
+        # 创建滚动区域包装功能按钮
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setFrameShape(QFrame.NoFrame)
         
         # 功能区域容器
         function_container = QWidget()
@@ -102,7 +133,9 @@ class FunctionView(QWidget):
         # 添加弹性空间
         function_layout.addStretch()
         
-        layout.addWidget(function_container)
+        # 将功能容器放入滚动区域
+        scroll_area.setWidget(function_container)
+        layout.addWidget(scroll_area)
     
     def create_function_button(self, config: dict) -> QPushButton:
         """根据配置创建功能按钮"""

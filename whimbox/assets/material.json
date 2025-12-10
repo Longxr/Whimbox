@@ -639,7 +639,7 @@
         "jihua": true
     },
     "扣扣毛球": {
-        "game_img": "T_Icon_item_AN0178.png",
+        "game_img": "T_Icon_item_AN0178",
         "type": "animal",
         "dig": false,
         "track": true,
