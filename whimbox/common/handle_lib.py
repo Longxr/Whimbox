@@ -50,7 +50,7 @@ class ProcessHandler():
         return win32gui.GetForegroundWindow() == self.handle
 
     def set_foreground(self):
-        if self.handle:
+        if self.is_alive():
             # 如果窗口被最小化，先恢复显示
             if win32gui.IsIconic(self.handle):
                 win32gui.ShowWindow(self.handle, win32con.SW_RESTORE)
@@ -59,15 +59,13 @@ class ProcessHandler():
     def is_alive(self):
         if not self.handle:
             return False
-        
         # 检查窗口句柄是否仍然有效
         if not win32gui.IsWindow(self.handle):
             return False
-        
         return True
 
     def check_shape(self):
-        if self.handle:
+        if self.is_alive():
             _, _, width, height = win32gui.GetClientRect(self.handle)
             if height == 0:
                 return False, 0, 0

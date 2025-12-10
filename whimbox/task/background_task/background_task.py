@@ -71,6 +71,7 @@ class BackgroundTaskManager:
         self.background_task = None
         self.background_thread = None
         self.is_game_started = False
+        self.is_game_shape_ok = False
         
         # 功能配置（默认全部关闭，设置不同的执行间隔）
         self.feature_configs = {
@@ -228,13 +229,16 @@ class BackgroundTask:
             if not HANDLE_OBJ.is_alive():
                 time.sleep(0.5)
                 HANDLE_OBJ.refresh_handle()
-                continue
+            else:
+                self.manager.is_game_started = True
+                break
+        while not self.stop_event.is_set():
             shape_ok, _, _ = HANDLE_OBJ.check_shape()
             if not shape_ok:
                 time.sleep(0.5)
-                continue
-            break
-        self.manager.is_game_started = True
+            else:
+                self.manager.is_game_shape_ok = True
+                break
         logger.info("后台小工具开始运行")
         
         try:
@@ -259,24 +263,18 @@ class BackgroundTask:
                 try:
                     cap = itt.capture()
                     
-                    # 检测钓鱼状态 - 根据间隔执行
-                    fishing_config = self.manager.get_feature_config(BackgroundFeature.AUTO_FISHING)
-                    if fishing_config and fishing_config.should_execute():
-                        if self._detect_fishing_opportunity(cap):
-                            self._execute_fishing()            
-                    
-                    # 检测对话状态 - 根据间隔执行
-                    dialogue_config = self.manager.get_feature_config(BackgroundFeature.AUTO_DIALOGUE)
-                    if dialogue_config and dialogue_config.should_execute():
-                        if self._detect_dialogue_opportunity(cap):
-                            self._execute_dialogue()
-
                     # 检测采集状态 - 根据间隔执行
                     pickup_config = self.manager.get_feature_config(BackgroundFeature.AUTO_PICKUP)
                     if pickup_config and pickup_config.should_execute():
                         if self._detect_pickup_opportunity(cap):
-                            itt.key_press(keybind.KEYBIND_INTERACTION)
-                    
+                            # 快速按F连续采集
+                            while True:
+                                itt.key_press(keybind.KEYBIND_INTERACTION)
+                                time.sleep(0.02)
+                                cap = itt.capture()
+                                if not self._detect_pickup_opportunity(cap):
+                                    break
+
                     # 检测清洁跳过状态
                     clear_config = self.manager.get_feature_config(BackgroundFeature.AUTO_CLEAR)
                     if clear_config and clear_config.should_execute():
@@ -288,6 +286,18 @@ class BackgroundTask:
                                 time.sleep(0.3)
                                 if not itt.get_img_existence(IconSkip):
                                     break
+
+                    # 检测钓鱼状态 - 根据间隔执行
+                    fishing_config = self.manager.get_feature_config(BackgroundFeature.AUTO_FISHING)
+                    if fishing_config and fishing_config.should_execute():
+                        if self._detect_fishing_opportunity(cap):
+                            self._execute_fishing()      
+                    
+                    # 检测对话状态 - 根据间隔执行
+                    dialogue_config = self.manager.get_feature_config(BackgroundFeature.AUTO_DIALOGUE)
+                    if dialogue_config and dialogue_config.should_execute():
+                        if self._detect_dialogue_opportunity(cap):
+                            self._execute_dialogue()
                             
                 except Exception as e:
                     # 如果游戏已经结束，退出循环

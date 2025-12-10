@@ -1,5 +1,4 @@
 
-from whimbox.common.utils.posi_utils import area_center
 from whimbox.task.task_template import TaskTemplate, register_step, STATE_TYPE_SUCCESS
 from whimbox.config.config import global_config
 from whimbox.common.path_lib import find_game_launcher_folder
@@ -61,7 +60,8 @@ class StartGameTask(TaskTemplate):
                 logger.error(f"打开叠纸启动器失败: {e}")
                 self.task_stop(f"打开叠纸启动器失败, 请手动打开游戏")
                 return None
-        
+            
+            self.log_to_gui("等待叠纸启动器启动")
             launcher_handle = ProcessHandler(process_name="xstarter.exe")
             while not self.need_stop():
                 time.sleep(1)
@@ -74,13 +74,14 @@ class StartGameTask(TaskTemplate):
         self.log_to_gui("叠纸启动器打开了")
         launcher_handle.set_foreground()
         launcher_itt = InteractionBGD(launcher_handle)
-        cap = launcher_itt.capture()
-        text_box_dict = ocr.detect_and_ocr(cap)
-        if '启动游戏' in text_box_dict:
-            target_box = text_box_dict['启动游戏']
-            click_posi = area_center(target_box)
-            launcher_itt.move_and_click(click_posi)
-        else:
+        retry_time = 3
+        while not self.need_stop() and retry_time > 0:
+            time.sleep(1)
+            if launcher_itt.appear_then_click(TextLaunchButton):
+                self.log_to_gui("点击启动游戏按钮成功")
+                break
+            retry_time -= 1
+        if retry_time <= 0:
             self.task_stop("未找到启动游戏按钮")
             return None
 
@@ -88,9 +89,20 @@ class StartGameTask(TaskTemplate):
     def step2(self):
         # 等待游戏窗口出现
         self.log_to_gui("等待游戏窗口出现，等待分辨率恢复正常")
-        while not self.need_stop() and not background_manager.is_game_started:
+        retry_time = 10
+        while not self.need_stop():
             time.sleep(1)
-        HANDLE_OBJ.set_foreground()
+            if background_manager.is_game_started:
+                retry_time -= 1
+                shape_ok, width, height = HANDLE_OBJ.check_shape()
+                logger.info(f"游戏分辨率: {width}x{height}")
+                if shape_ok:
+                    HANDLE_OBJ.set_foreground()
+                    break
+                else:
+                    if retry_time <= 0:
+                        self.task_stop(f"当前游戏分辨率为{width}x{height}，请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440")
+                        return None
         if itt.get_img_existence(IconPageMainFeature):
             self.update_task_result(status=STATE_TYPE_SUCCESS, message="成功进入游戏")
             return

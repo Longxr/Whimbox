@@ -1,5 +1,3 @@
-# 因为我们的task将直接被mcp调用
-# 所以就不整原项目thread管理那一套了，怎么简单怎么来
 from whimbox.common.logger import logger
 from whimbox.common.utils.ui_utils import back_to_page_main
 from whimbox.common.cvars import (

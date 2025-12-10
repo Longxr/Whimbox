@@ -29,7 +29,7 @@ class AllInOneTask(TaskTemplate):
             return "step1"
         else:
             self.log_to_gui(task_result.message, is_error=True)
-            return "step7"
+            return None
 
     @register_step("美鸭梨挖掘")
     def step1(self):
