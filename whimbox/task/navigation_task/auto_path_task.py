@@ -12,6 +12,7 @@ from whimbox.action.pickup import PickupTask
 from whimbox.action.catch_insect import CatchInsectTask
 from whimbox.action.clean_animal import CleanAnimalTask
 from whimbox.task.minigame_task.minigame_task import MinigameTask
+from whimbox.task.macro_task.run_macro_task import RunMacroTask
 from whimbox.action.fishing import FishingTask
 from whimbox.common.scripts_manager import *
 from whimbox.map.convert import convert_GameLoc_to_PngMapPx
@@ -222,8 +223,16 @@ class AutoPathTask(TaskTemplate):
                     elif self.target_point.action == ACTION_KEY_CLICK:
                         itt.key_press(self.target_point.action_params)
                     elif self.target_point.action == ACTION_MINIGAME:
-                        task = MinigameTask(self.target_point.action_params)
-                        task.task_run()
+                        macro_name = self.target_point.action_params
+                        if macro_name is not None:
+                            minigame_task = MinigameTask(self.target_point.action_params)
+                            minigame_task.task_run()
+                    elif self.target_point.action == ACTION_MACRO:
+                        macro_name = self.target_point.action_params
+                        if macro_name is not None:
+                            macro_task = RunMacroTask(macro_name)
+                            macro_task.task_run()
+                    
                     
                 # 当行动模式切换时停一下，避免因为状态切换时图标显示比较乱而错判
                 self.need_move_mode = self.target_point.move_mode
