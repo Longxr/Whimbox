@@ -1,6 +1,6 @@
 '''朝夕心愿一条龙'''
 
-from whimbox.task.task_template import STATE_TYPE_SUCCESS, TaskTemplate, register_step
+from whimbox.task.task_template import *
 from whimbox.task import daily_task
 from whimbox.task.navigation_task.auto_path_task import AutoPathTask
 from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
@@ -29,11 +29,11 @@ class AllInOneTask(TaskTemplate):
             return "step1"
         else:
             self.log_to_gui(task_result.message, is_error=True)
-            return None
+            return STEP_NAME_FINISH
 
     @register_step("美鸭梨挖掘")
     def step1(self):
-        dig_task = daily_task.DigTask()
+        dig_task = daily_task.DigTaskV2()
         task_result = dig_task.task_run()
         self.task_result_list['dig_task'] = task_result.data
 

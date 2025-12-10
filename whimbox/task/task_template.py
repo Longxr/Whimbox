@@ -15,6 +15,8 @@ STATE_TYPE_SUCCESS = "success"
 STATE_TYPE_ERROR = "error"
 STATE_TYPE_STOP = "stop"
 
+STEP_NAME_FINISH = "step_finish"
+
 class state:
     def __init__(self, type="", msg=""):
         self.type = type
@@ -175,7 +177,7 @@ class TaskTemplate:
         current_step_name = self.step_order[0] if self.step_order else None
         
         try:
-            while current_step_name and not self.need_stop():
+            while current_step_name != STEP_NAME_FINISH and not self.need_stop():
                 # 获取当前步骤
                 step = self.steps_dict.get(current_step_name)
                 if not step:
@@ -201,7 +203,7 @@ class TaskTemplate:
                         current_step_name = self.step_order[current_index + 1]
                     else:
                         # 已到达最后一步
-                        current_step_name = None
+                        current_step_name = STEP_NAME_FINISH
                 
                 time.sleep(self.step_sleep)
 
@@ -237,6 +239,7 @@ class TaskTemplate:
 
 
     def task_stop(self, message=None, data=None):
+        # 慎用此方法，会停止该任务链上的所有父任务子任务
         '''如果子类有自己额外的停止代码，就实现这个方法，并调用父类的这个方法'''
         if not self.stop_flag.is_set():
             self.stop_flag.set()

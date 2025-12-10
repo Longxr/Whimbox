@@ -1,5 +1,5 @@
 
-from whimbox.task.task_template import TaskTemplate, register_step, STATE_TYPE_SUCCESS
+from whimbox.task.task_template import *
 from whimbox.config.config import global_config
 from whimbox.common.path_lib import find_game_launcher_folder
 from whimbox.common.handle_lib import ProcessHandler
@@ -22,7 +22,7 @@ class StartGameTask(TaskTemplate):
         # 判断游戏是否已经在运行
         if HANDLE_OBJ.get_handle():
             self.update_task_result(status=STATE_TYPE_SUCCESS, message="游戏已经在运行，无需自动启动")
-            return None
+            return STEP_NAME_FINISH
         
         # 判断启动器是否已经在运行
         launcher_handle = ProcessHandler(process_name="xstarter.exe")
@@ -33,14 +33,14 @@ class StartGameTask(TaskTemplate):
                 launcher_path = os.path.join(launcher_path, "launcher.exe")
                 if launcher_path == "":
                     self.task_stop("未能自动找到叠纸启动器路径，请手动打开游戏或在奇想盒设置中设置")
-                    return None
+                    return
                 else:
                     global_config.set("Path", "launcher_path", launcher_path)
                     global_config.save()
             
             if not os.path.exists(launcher_path):
                 self.task_stop("未能自动找到叠纸启动器路径，请手动打开游戏或在奇想盒设置中设置")
-                return None
+                return
 
             # subprocess.Popen(
             #     launcher_path, 
@@ -59,7 +59,7 @@ class StartGameTask(TaskTemplate):
             except Exception as e:
                 logger.error(f"打开叠纸启动器失败: {e}")
                 self.task_stop(f"打开叠纸启动器失败, 请手动打开游戏")
-                return None
+                return
             
             self.log_to_gui("等待叠纸启动器启动")
             launcher_handle = ProcessHandler(process_name="xstarter.exe")
@@ -83,7 +83,7 @@ class StartGameTask(TaskTemplate):
             retry_time -= 1
         if retry_time <= 0:
             self.task_stop("未找到启动游戏按钮")
-            return None
+            return
 
     @register_step("进入游戏")
     def step2(self):
@@ -102,7 +102,7 @@ class StartGameTask(TaskTemplate):
                 else:
                     if retry_time <= 0:
                         self.task_stop(f"当前游戏分辨率为{width}x{height}，请先将游戏的显示模式设置为窗口模式，分辨率设置为1920x1080或2560x1440")
-                        return None
+                        return
         if itt.get_img_existence(IconPageMainFeature):
             self.update_task_result(status=STATE_TYPE_SUCCESS, message="成功进入游戏")
             return

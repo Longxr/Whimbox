@@ -102,17 +102,14 @@ async def monster_task(level_name=None) -> dict:
 
 @mcp.tool()
 @check_game_ok
-async def dig_task(target_item_list=None) -> dict:
+async def dig_task() -> dict:
     """
     美鸭梨挖掘，只有当明确说明“挖掘”或“美鸭梨挖掘”时才能调用这个工具
-
-    Args:
-        target_item_list: 可选，要挖掘的材料名列表，如果不输入，会自动读取配置文件
 
     Returns:
         dict: 包含操作状态的字典，包含status和message字段
     """
-    dig_task = daily_task.DigTask(target_item_list)
+    dig_task = daily_task.DigTaskV2()
     task_result = dig_task.task_run()
     return task_result.to_dict()
 

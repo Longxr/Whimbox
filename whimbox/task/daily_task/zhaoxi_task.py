@@ -15,6 +15,12 @@ from whimbox.common.logger import logger
 
 zxxy_task_info_list = [
     {
+        "key_words": ["活跃能量"],
+        "score": 200,
+        "priority": 5,
+        "task_name": DAILY_TASK_COST_ENERGY
+    },
+    {
         "key_words": ["素材激化幻境"],
         "score": 200,
         "priority": 5,
@@ -25,6 +31,12 @@ zxxy_task_info_list = [
         "score": 200,
         "priority": 5,
         "task_name": DAILY_TASK_GET_BLESS
+    },
+    {
+        "key_words": ["魔物试炼幻境"],
+        "score": 200,
+        "priority": 5,
+        "task_name": DAILY_TASK_MONSTER
     },
     {
         "key_words": ["植物"],
@@ -39,22 +51,10 @@ zxxy_task_info_list = [
         "task_name": DAILY_TASK_CATCH_INSECT
     },
     {
-        "key_words": ["魔物试炼幻境"],
-        "score": 200,
-        "priority": 5,
-        "task_name": DAILY_TASK_MONSTER
-    },
-    {
         "key_words": ["小游戏"],
         "score": 200,
         "priority": 4,
         "task_name": DAILY_TASK_MINIGAME
-    },
-    {
-        "key_words": ["活跃能量"],
-        "score": 150,
-        "priority": 5,
-        "task_name": DAILY_TASK_COST_ENERGY
     },
     {
         "key_words": ["照片"],

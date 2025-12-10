@@ -68,10 +68,6 @@
             "value": "素材激化幻境",
             "description": "默认消耗体力的幻境"
         },
-        "meiyali_dig": {
-            "value": "雾绡鱼|玉簪蚱蜢|画眉毛团|纯真丝线",
-            "description": "美鸭梨挖掘的默认材料（如果之前已经在挖掘，则沿用之前的）"
-        },
         "jihua_target": {
             "value": "闪亮泡泡",
             "description": "激化幻境的默认兑换目标"
