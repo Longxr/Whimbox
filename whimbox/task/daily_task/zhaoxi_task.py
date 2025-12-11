@@ -47,13 +47,13 @@ zxxy_task_info_list = [
     {
         "key_words": ["昆虫"],
         "score": 200,
-        "priority": 4,
+        "priority": 3,
         "task_name": DAILY_TASK_CATCH_INSECT
     },
     {
         "key_words": ["小游戏"],
         "score": 200,
-        "priority": 4,
+        "priority": 2,
         "task_name": DAILY_TASK_MINIGAME
     },
     {
@@ -164,7 +164,7 @@ class ZhaoxiTask(TaskTemplate):
         if DAILY_TASK_COST_ENERGY in unfinished_task_list:
             unfinished_task_list.remove(DAILY_TASK_COST_ENERGY)
             self.todo_list.append(DAILY_TASK_COST_ENERGY)
-            temp_score += 150
+            temp_score += 200
         # 然后根据分数和优先级完成其他任务
         for task in unfinished_task_list:
             if task['priority'] == 0:
