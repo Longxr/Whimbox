@@ -26,11 +26,9 @@ class MinigameTask(TaskTemplate):
         if itt.get_img_existence(IconPageMainFeature):
             raise Exception("未进入NPC对话")
         skip_dialog()
-        itt.delay(0.5, comment="等待对话选项出现")
         if not scroll_find_click(AreaDialogSelection, "开始游戏", str_match_mode=1):
             raise Exception("未找到对话选项：开始游戏")
         skip_dialog()
-        itt.delay(0.5, comment="等待对话选项出现")
         if not scroll_find_click(AreaDialogSelection, "没问题", str_match_mode=1):
             raise Exception("未找到对话选项：支付噗灵")
         skip_dialog()
@@ -73,6 +71,7 @@ class MinigameTask(TaskTemplate):
         wait_until_appear(IconSkipDialog, 10)
         skip_dialog()
         if wait_until_appear(IconClickSkip):
+            itt.delay(1, comment="不加延迟，有些电脑就是不行")
             itt.key_press(keybind.KEYBIND_INTERACTION)
         skip_dialog()
         if not scroll_find_click(AreaDialogSelection, "谢谢你", str_match_mode=1):
