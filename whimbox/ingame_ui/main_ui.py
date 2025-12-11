@@ -612,7 +612,10 @@ class IngameUI(QWidget):
             if HANDLE_OBJ.is_foreground() and not self.focus_on_game:
                 self.give_back_focus()
             elif not HANDLE_OBJ.is_foreground() and self.focus_on_game:
-                self.acquire_focus()
+                if self.is_minimized:
+                    pass
+                else:
+                    self.acquire_focus()
     
     def update_message(self, message: str, type="update_ai_message"):
         """更新聊天消息"""
