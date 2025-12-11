@@ -284,7 +284,8 @@ class BackgroundTask:
                             
                 except Exception as e:
                     if not HANDLE_OBJ.is_alive():
-                        time.sleep(5)
+                        time.sleep(10)
+                        logger.info("游戏窗口已关闭，重新获取窗口句柄")
                         HANDLE_OBJ.refresh_handle()
                     else:
                         # 如果游戏最小化了
