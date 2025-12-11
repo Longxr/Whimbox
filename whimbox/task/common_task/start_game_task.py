@@ -107,7 +107,7 @@ class StartGameTask(TaskTemplate):
             if background_manager.is_game_started:
                 retry_time -= 1
                 shape_ok, width, height = HANDLE_OBJ.check_shape()
-                if shape_ok or width/height == 1920/1080: # 条件放宽，有些电脑不进入游戏不会恢复分辨率
+                if shape_ok or (width > 0 and height > 0 and width/height == 1920/1080): # 条件放宽，有些电脑不进入游戏不会恢复分辨率
                     HANDLE_OBJ.set_foreground()
                     break
                 else:
@@ -137,9 +137,10 @@ class StartGameTask(TaskTemplate):
             if "点击进入游戏" in text_box_dict:
                 click_box(text_box_dict["点击进入游戏"], AreaLoginOCR)
                 break
-            if "确认" in text_box_dict:
+            if "确认" in text_box_dict and "退出游戏" not in text_box_dict and "账号登出" not in text_box_dict:
                 self.log_to_gui("发现新版本，开始更新")
                 click_box(text_box_dict["确认"], AreaLoginOCR)
+                time.sleep(10)
                 return "step2"
             else:
                 itt.key_press('esc')
