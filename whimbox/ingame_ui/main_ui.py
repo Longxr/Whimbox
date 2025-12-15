@@ -714,18 +714,28 @@ class IngameUI(QWidget):
                         self.resizing = True
                         self.resize_edge = edge
                         self.resize_start_pos = event.globalPos()
-                        self.resize_start_geometry = self.expanded_widget.geometry()
+                        self.resize_start_geometry = self.geometry()  # 保存主窗口的geometry
                         return True
             
             elif event.type() == QEvent.MouseButtonRelease:
                 if event.button() == Qt.LeftButton and self.resizing:
                     # 结束调整大小
+                    resize_edge = self.resize_edge  # 保存边缘信息
                     self.resizing = False
                     self.resize_edge = None
+                    
                     # 保存大小到配置
                     self.saved_size = self.expanded_widget.size()
                     global_config.set("General", "ui_width", self.saved_size.width())
                     global_config.set("General", "ui_height", self.saved_size.height())
+                    
+                    # 如果拖动了left或top边缘，窗口位置已改变，需要同步更新saved_position
+                    if resize_edge and ('left' in resize_edge or 'top' in resize_edge):
+                        self.saved_position = self.pos()
+                        global_config.set("General", "ui_position_x", self.saved_position.x())
+                        global_config.set("General", "ui_position_y", self.saved_position.y())
+                        logger.info(f"UI position updated: ({self.saved_position.x()}, {self.saved_position.y()})")
+                    
                     global_config.save()
                     logger.info(f"UI size saved: ({self.saved_size.width()}, {self.saved_size.height()})")
                     return True
@@ -735,67 +745,72 @@ class IngameUI(QWidget):
     def handle_resize(self, global_pos: QPoint):
         """处理窗口大小调整"""
         delta = global_pos - self.resize_start_pos
-        new_geometry = QRect(self.resize_start_geometry)
+        
+        # 使用保存的起始geometry进行计算
         min_width = self.expanded_widget.minimumWidth()
         min_height = self.expanded_widget.minimumHeight()
+        
+        # 新的主窗口几何（包含20像素边距）
+        new_main_geometry = QRect(self.resize_start_geometry)
         
         # 标记是否达到最小尺寸
         width_clamped = False
         height_clamped = False
         
         # 根据边缘类型调整窗口大小和位置
+        # 注意：expanded_widget固定在主窗口内(10, 10)位置，所以只需要调整主窗口
         if 'left' in self.resize_edge:
             new_width = self.resize_start_geometry.width() - delta.x()
-            if new_width >= min_width:
-                new_geometry.setLeft(self.resize_start_geometry.left() + delta.x())
-                new_geometry.setWidth(new_width)
+            if new_width >= min_width + 20:  # 考虑20像素边距
+                new_main_geometry.setLeft(self.resize_start_geometry.left() + delta.x())
+                new_main_geometry.setWidth(new_width)
             else:
                 # 达到最小宽度，锁定在最小值
-                new_geometry.setWidth(min_width)
-                new_geometry.setLeft(self.resize_start_geometry.right() - min_width)
+                new_main_geometry.setWidth(min_width + 20)
+                new_main_geometry.setLeft(self.resize_start_geometry.right() - min_width - 20)
                 width_clamped = True
         
         if 'right' in self.resize_edge:
             new_width = self.resize_start_geometry.width() + delta.x()
-            if new_width >= min_width:
-                new_geometry.setWidth(new_width)
+            if new_width >= min_width + 20:
+                new_main_geometry.setWidth(new_width)
             else:
                 # 达到最小宽度，锁定在最小值
-                new_geometry.setWidth(min_width)
+                new_main_geometry.setWidth(min_width + 20)
                 width_clamped = True
         
         if 'top' in self.resize_edge:
             new_height = self.resize_start_geometry.height() - delta.y()
-            if new_height >= min_height:
-                new_geometry.setTop(self.resize_start_geometry.top() + delta.y())
-                new_geometry.setHeight(new_height)
+            if new_height >= min_height + 20:  # 考虑20像素边距
+                new_main_geometry.setTop(self.resize_start_geometry.top() + delta.y())
+                new_main_geometry.setHeight(new_height)
             else:
                 # 达到最小高度，锁定在最小值
-                new_geometry.setHeight(min_height)
-                new_geometry.setTop(self.resize_start_geometry.bottom() - min_height)
+                new_main_geometry.setHeight(min_height + 20)
+                new_main_geometry.setTop(self.resize_start_geometry.bottom() - min_height - 20)
                 height_clamped = True
         
         if 'bottom' in self.resize_edge:
             new_height = self.resize_start_geometry.height() + delta.y()
-            if new_height >= min_height:
-                new_geometry.setHeight(new_height)
+            if new_height >= min_height + 20:
+                new_main_geometry.setHeight(new_height)
             else:
                 # 达到最小高度，锁定在最小值
-                new_geometry.setHeight(min_height)
+                new_main_geometry.setHeight(min_height + 20)
                 height_clamped = True
         
-        # 应用新的几何属性
-        self.expanded_widget.setGeometry(new_geometry)
+        # 应用新的主窗口几何
+        self.setGeometry(new_main_geometry)
+        
+        # 同步更新expanded_widget的大小（位置固定在10, 10）
+        new_widget_width = new_main_geometry.width() - 20
+        new_widget_height = new_main_geometry.height() - 20
+        self.expanded_widget.setGeometry(10, 10, new_widget_width, new_widget_height)
         
         # 如果达到了最小尺寸，更新起始参考点，避免反弹
         if width_clamped or height_clamped:
-            self.resize_start_geometry = self.expanded_widget.geometry()
+            self.resize_start_geometry = self.geometry()
             self.resize_start_pos = global_pos
-        
-        # 同步更新主窗口的大小
-        widget_size = self.expanded_widget.size()
-        self.setGeometry(self.geometry().x(), self.geometry().y(), 
-                        widget_size.width() + 20, widget_size.height() + 20)
     
     def changeEvent(self, event):
         """处理窗口状态变化事件"""
