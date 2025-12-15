@@ -7,6 +7,8 @@ from whimbox.task.photo_task.daily_photo_task import DailyPhotoTask
 from whimbox.config.config import global_config
 from whimbox.task.daily_task.cvar import *
 from whimbox.task.common_task.start_game_task import StartGameTask
+from whimbox.map.detection.cvars import MAP_NAME_MIRALAND, MAP_NAME_UNSUPPORTED
+from whimbox.map.convert import convert_GameLoc_to_PngMapPx
 
 
 class AllInOneTask(TaskTemplate):
@@ -40,6 +42,13 @@ class AllInOneTask(TaskTemplate):
 
     @register_step("检查周本进度")
     def step2(self):
+        self.log_to_gui("检查是否在家园")
+        from whimbox.map.map import nikki_map
+        nikki_map.reinit_smallmap()
+        # 如果在不支持的地图（比如家园），就传送到花愿镇
+        if nikki_map.map_name == MAP_NAME_UNSUPPORTED:
+            loc = convert_GameLoc_to_PngMapPx([-13172.34765625, -54273.6171875], MAP_NAME_MIRALAND)
+            nikki_map.bigmap_tp(loc, MAP_NAME_MIRALAND)
         weekly_realm_task = daily_task.WeeklyRealmTask()
         task_result = weekly_realm_task.task_run()
         self.task_result_list['weekly_realm_task'] = task_result.data
