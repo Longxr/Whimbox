@@ -109,7 +109,6 @@ class StartGameTask(TaskTemplate):
                     HANDLE_OBJ.refresh_handle()
                 shape_ok, width, height = HANDLE_OBJ.check_shape()
                 if shape_ok or (width > 0 and height > 0 and width/height == 1920/1080): # 条件放宽，有些电脑不进入游戏不会恢复分辨率
-                    HANDLE_OBJ.set_foreground()
                     break
                 else:
                     if retry_time == 24:
@@ -121,6 +120,7 @@ class StartGameTask(TaskTemplate):
 
     @register_step("进入游戏")
     def step3(self):
+        HANDLE_OBJ.set_foreground()
         # 检测是否已经进入游戏
         if ui_control.is_valid_page():
             self.update_task_result(status=STATE_TYPE_SUCCESS, message="成功进入游戏")

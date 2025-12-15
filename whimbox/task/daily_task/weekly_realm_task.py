@@ -52,11 +52,11 @@ class WeeklyRealmTask(TaskTemplate):
 
     @register_step("快速挑战奇格格达")
     def step3(self):
-        return self.quick_challenge("奇格格达")
+        self.quick_challenge("奇格格达")
     
     @register_step("快速挑战卷卷")
     def step4(self):
-        return self.quick_challenge("卷卷")
+        self.quick_challenge("卷卷")
 
     @register_step("完成每周幻境")
     def step5(self):
