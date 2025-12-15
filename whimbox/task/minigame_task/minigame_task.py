@@ -17,7 +17,6 @@ class MinigameTask(TaskTemplate):
         self.max_retry_times = 2
         self.retry_times = 0
         self.macro_name = macro_name
-        self.retry_delay = 0
 
     @register_step("与NPC对话开始小游戏")
     def step1(self):
@@ -45,7 +44,7 @@ class MinigameTask(TaskTemplate):
         def check_stop_func():
             return not itt.get_img_existence(IconPageMainFeature)
 
-        task = RunMacroTask(self.macro_name, delay=self.retry_delay, check_stop_func=check_stop_func)
+        task = RunMacroTask(self.macro_name, check_stop_func=check_stop_func)
         task.task_run()
     
     @ register_step("检查是否失败")
@@ -57,8 +56,7 @@ class MinigameTask(TaskTemplate):
                 return 'step4'
             else:
                 self.retry_times += 1
-                self.retry_delay -= 0.2
-                self.log_to_gui(f"小游戏失败了，提前0.2秒再试一遍")
+                self.log_to_gui(f"小游戏失败了，再试一遍")
                 itt.appear_then_click(ButtonMinigameRetry)
                 time.sleep(0.5)
                 wait_until_appear_then_click(ButtonMinigameRetryOk)
