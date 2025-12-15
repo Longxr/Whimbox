@@ -255,6 +255,8 @@ async def daily_photo_task() -> dict:
 async def all_in_one_task() -> dict:
     """
     一条龙，一次性完成所有任务。无论结果如何，只调用一次。
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
     """
     all_in_one_task = daily_task.AllInOneTask()
     task_result = all_in_one_task.task_run()
@@ -265,11 +267,26 @@ async def all_in_one_task() -> dict:
 async def monthly_pass_task() -> dict:
     """
     领取奇迹之旅（大月卡）奖励
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
     """
     monthly_pass_task = daily_task.MonthlyPassTask()
     task_result = monthly_pass_task.task_run()
     return task_result.to_dict()
 
+
+@mcp.tool()
+@check_game_ok
+async def weekly_realm_task() -> dict:
+    """
+    每周幻境，周本，心之突破幻境
+    Returns:
+        dict: 包含操作状态的字典，包含status和message字段
+    """
+    weekly_realm_task = daily_task.WeeklyRealmTask()
+    task_result = weekly_realm_task.task_run()
+    return task_result.to_dict()
+    
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request):
     """
