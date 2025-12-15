@@ -22,10 +22,10 @@ class WeeklyRealmTask(TaskTemplate):
             self.log_to_gui(f"每周幻境完成情况: {finished_count}/{total_count}")
         except:
             raise Exception(f"每周幻境完成数量识别异常:{weekly_count_str}")
-        # if finished_count < total_count:
-        #     return
-        # else:
-        #     return "step5"
+        if finished_count < total_count:
+            return
+        else:
+            return "step5"
     
     @register_step("前往心之突破幻境")
     def step2(self):

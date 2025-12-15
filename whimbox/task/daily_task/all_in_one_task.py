@@ -45,21 +45,21 @@ class AllInOneTask(TaskTemplate):
         self.task_result_list['weekly_realm_task'] = task_result.data
 
     @register_step("检查朝夕心愿进度")
-    def step2(self):
+    def step3(self):
         zhaoxi_task = daily_task.ZhaoxiTask()
         task_result = zhaoxi_task.task_run()
         self.zhaoxi_todo_list = task_result.data
         if task_result.status == STATE_TYPE_SUCCESS:
-            if self.zhaoxi_todo_list and len(self.zhaoxi_todo_list) == 0:
+            if not self.zhaoxi_todo_list:
                 self.task_result_list['zhaoxi_task'] = True
-                return "step4"
+                return "step5"
             self.log_to_gui(task_result.message)
         else:
             self.log_to_gui(task_result.message, is_error=True)
-            return "step4"
+            return "step5"
 
     @register_step("开始完成朝夕心愿任务")
-    def step3(self):
+    def step4(self):
         task_dict = {
             DAILY_TASK_PICKUP: AutoPathTask(path_name="朝夕心愿_采集", excepted_num=5),
             DAILY_TASK_CATCH_INSECT: AutoPathTask(path_name="朝夕心愿_捕虫", excepted_num=3),
@@ -75,7 +75,7 @@ class AllInOneTask(TaskTemplate):
                 task.task_run()
         
     @register_step("消耗剩余体力")
-    def step4(self):
+    def step5(self):
         energy_cost = global_config.get("Game", "energy_cost")
         if energy_cost == "素材激化幻境":
             if DAILY_TASK_JIHUA not in self.zhaoxi_todo_list:
@@ -103,23 +103,26 @@ class AllInOneTask(TaskTemplate):
             return "step5"
     
     @register_step("获取朝夕心愿奖励")
-    def step5(self):
+    def step6(self):
+        if self.task_result_list['zhaoxi_task'] == True:
+            self.log_to_gui("朝夕心愿已完成，无需再次领取奖励")
+            return
         zhaoxi_task = daily_task.ZhaoxiTask()
         task_result = zhaoxi_task.task_run()
         self.zhaoxi_todo_list = task_result.data
-        if self.zhaoxi_todo_list and len(self.zhaoxi_todo_list) == 0:
+        if not self.zhaoxi_todo_list:
             self.task_result_list['zhaoxi_task'] = True
         else:
             self.task_result_list['zhaoxi_task'] = False
 
     @register_step("领取奇迹之旅奖励")
-    def step6(self):
+    def step7(self):
         monthly_pass_task = daily_task.MonthlyPassTask()
         monthly_pass_task.task_run()
         self.task_result_list['monthly_pass_task'] = True
 
     @register_step("一条龙结束")
-    def step7(self):
+    def step8(self):
         msg = ""
         if self.task_result_list['dig_task']:
             msg += "美鸭梨挖掘成功,"
