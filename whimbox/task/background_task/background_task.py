@@ -95,7 +95,6 @@ class BackgroundTaskManager:
             if feature in self.feature_configs:
                 self.feature_configs[feature].enabled = enabled
                 self.feature_configs[feature].reset_counter()
-                logger.info(f"后台功能 {feature.value} {'启用' if enabled else '禁用'}")
                 # 保存到配置文件
                 self._save_to_config(feature, enabled)
     

@@ -267,8 +267,6 @@ class FunctionView(QWidget):
     def on_background_feature_changed(self, feature: BackgroundFeature, enabled: bool):
         """后台功能复选框改变 - 直接调用 background_manager"""
         try:
-            logger.info(f"设置后台功能: {feature.value} = {enabled}")
-            
             # 直接调用 background_manager 设置功能
             background_manager.set_feature_enabled(feature, enabled)
             
