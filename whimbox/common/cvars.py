@@ -1,7 +1,8 @@
 """Constants."""
 
-import threading
 import contextvars
+import threading
+
 from whimbox.common.path_lib import IS_DEV_MODE
 from whimbox.config.config import global_config
 
@@ -56,6 +57,7 @@ ANGLE_NEGATIVE_XY = 3
 
 # Process name
 PROCESS_NAME = 'X6Game-Win64-Shipping.exe'
+LAUNCHER_PROCESS_NAME = 'xstarter.exe'
 
 # log
 LOG_NONE = 0

@@ -1,6 +1,10 @@
 import psutil
-import win32gui, win32process, win32con
+import win32con
+import win32gui
+import win32process
+
 from whimbox.common.cvars import PROCESS_NAME
+
 
 def get_hwnd_for_pid(pid):
     hwnds = []
@@ -80,6 +84,21 @@ class ProcessHandler():
             else:
                 return False, width, height
         return False, 0, 0
+    
+    def terminate_process(self):
+        """终止进程"""
+        if not self.process_name:
+            return False
+        
+        try:
+            for proc in psutil.process_iter(['pid', 'name']):
+                if proc.info['name'] == self.process_name:
+                    process = psutil.Process(proc.info['pid'])
+                    process.terminate()
+                    return True
+            return False
+        except Exception as e:
+            return False
             
 
 HANDLE_OBJ = ProcessHandler(PROCESS_NAME)

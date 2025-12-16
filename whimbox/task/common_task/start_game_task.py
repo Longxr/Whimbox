@@ -1,18 +1,19 @@
 
-from whimbox.task.task_template import *
-from whimbox.config.config import global_config
+import os
+import time
+
+from whimbox.common.cvars import LAUNCHER_PROCESS_NAME
+from whimbox.common.handle_lib import HANDLE_OBJ, ProcessHandler
+from whimbox.common.logger import logger
 from whimbox.common.path_lib import find_game_launcher_folder
-from whimbox.common.handle_lib import ProcessHandler
-from whimbox.interaction.interaction_core import InteractionBGD
-from whimbox.common.handle_lib import HANDLE_OBJ
+from whimbox.common.utils.posi_utils import area_center
+from whimbox.config.config import global_config
+from whimbox.interaction.interaction_core import InteractionBGD, itt
+from whimbox.task.background_task.background_task import background_manager
+from whimbox.task.task_template import *
 from whimbox.ui.ui import ui_control
 from whimbox.ui.ui_assets import *
-from whimbox.interaction.interaction_core import itt
-from whimbox.task.background_task.background_task import background_manager
-from whimbox.common.logger import logger
-from whimbox.common.utils.posi_utils import area_center
 
-import os, time
 
 class StartGameTask(TaskTemplate):
     def __init__(self):
@@ -26,7 +27,7 @@ class StartGameTask(TaskTemplate):
             return
         
         # 判断启动器是否已经在运行
-        launcher_handle = ProcessHandler(process_name="xstarter.exe")
+        launcher_handle = ProcessHandler(process_name=LAUNCHER_PROCESS_NAME)
         if not launcher_handle.get_handle():
             launcher_path = global_config.get("Path", "launcher_path")
             if launcher_path == "":
@@ -63,7 +64,7 @@ class StartGameTask(TaskTemplate):
                 return
             
             self.log_to_gui("等待叠纸启动器启动")
-            launcher_handle = ProcessHandler(process_name="xstarter.exe")
+            launcher_handle = ProcessHandler(process_name=LAUNCHER_PROCESS_NAME)
             while not self.need_stop():
                 time.sleep(1)
                 if not launcher_handle.get_handle():

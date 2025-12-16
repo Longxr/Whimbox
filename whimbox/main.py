@@ -63,11 +63,19 @@ def run_one_dragon():
     """直接运行一条龙任务，完成后退出"""
     _prepare_env()
 
+    from whimbox.task.common_task.close_game_task import CloseGameTask
     from whimbox.task.daily_task.all_in_one_task import AllInOneTask
+    
     logger.info("开始执行一条龙任务...")
     task = AllInOneTask()
     task_result = task.task_run()
     logger.info(f"一条龙任务完成: {task_result.message}")
+    
+    # 执行关闭游戏任务
+    close_task = CloseGameTask()
+    close_result = close_task.task_run()
+    logger.info(f"关闭游戏任务完成: {close_result.message}")
+    
     logger.info("任务结束，程序退出")
 
 def main():
